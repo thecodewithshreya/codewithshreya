@@ -1,0 +1,95 @@
+# A practical guide to time and space complexity
+
+When we compare two algorithms, execution time alone is not a reliable measurement. A faster computer, a different programming language, or a smaller input can change the result.
+
+**Time and space complexity describe how an algorithm's resource usage grows as its input grows.** This gives us a machine-independent way to reason about performance.
+
+## What does Big O measure?
+
+Big O notation describes an algorithm's upper growth rate. It focuses on the part of the work that matters most as the input size, usually written as `n`, becomes large.
+
+For example, consider a linear search:
+
+```ts
+function findNumber(numbers: number[], target: number) {
+  for (const number of numbers) {
+    if (number === target) return true;
+  }
+
+  return false;
+}
+```
+
+In the worst case, the function checks every element. If the array contains `n` elements, the amount of work grows with `n`, so its time complexity is **O(n)**.
+
+## Common time complexities
+
+| Complexity | Name | Typical example |
+| --- | --- | --- |
+| O(1) | Constant | Reading an array element by index |
+| O(log n) | Logarithmic | Binary search |
+| O(n) | Linear | Scanning a list |
+| O(n log n) | Linearithmic | Efficient comparison sorting |
+| O(n²) | Quadratic | Comparing every pair |
+
+The goal is not to memorize the table. Focus on how many more operations are required when the input doubles.
+
+## Ignore constants and smaller terms
+
+Suppose an algorithm performs `3n + 10` operations. Big O simplifies this to **O(n)** because the linear term controls the growth for large inputs.
+
+Similarly:
+
+```text
+n² + 5n + 20  →  O(n²)
+```
+
+This does not mean constants never matter in real software. It means Big O answers a specific question about growth rather than exact runtime.
+
+## Nested loops are not always O(n²)
+
+Two nested loops often indicate quadratic complexity:
+
+```ts
+for (const first of numbers) {
+  for (const second of numbers) {
+    compare(first, second);
+  }
+}
+```
+
+Both loops visit all `n` elements, producing `n × n` operations: **O(n²)**.
+
+However, do not count loops mechanically. If two pointers move through the same array and each pointer only moves forward, the total work may still be **O(n)**.
+
+<ArticleQuiz
+  question="A loop halves the remaining input after every step. What is its likely time complexity?"
+  options={["O(1)", "O(log n)", "O(n)", "O(n²)"]}
+  answer="O(log n)"
+/>
+
+## What is space complexity?
+
+Space complexity describes how much additional memory an algorithm needs as the input grows.
+
+This function creates another array containing `n` values:
+
+```ts
+function doubleValues(numbers: number[]) {
+  return numbers.map((number) => number * 2);
+}
+```
+
+Its additional space complexity is **O(n)**. An in-place algorithm that uses only a few variables usually has **O(1)** additional space.
+
+Recursive functions also consume call-stack space. A recursive function with a maximum depth of `n` generally requires **O(n)** stack space.
+
+## A practical analysis process
+
+1. Define the input size.
+2. Identify the operation that repeats.
+3. Count how that operation grows with the input.
+4. Keep the dominant term.
+5. Analyze additional memory separately.
+
+Complexity analysis is a decision-making tool, not a competition to find the smallest notation. Start with correctness and clarity, then optimize when input size or measurements show that performance matters.

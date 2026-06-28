@@ -28,6 +28,7 @@ export default function VideosPage() {
               {filter}
             </span>
           ))}
+          <span className="self-center px-2 text-xs text-gray-500">Filters coming soon</span>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {videos.map((video) => <VideoCard key={video.title} video={video} />)}

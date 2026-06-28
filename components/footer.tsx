@@ -39,6 +39,7 @@ export function Footer() {
               </span>
             ))}
           </div>
+          <p className="mt-2 text-xs text-gray-500">Social links coming soon</p>
         </div>
         <FooterColumn title="Learn" links={productLinks} />
         <FooterColumn title="Explore" links={companyLinks} />

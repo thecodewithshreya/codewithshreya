@@ -7,11 +7,12 @@ type Article = {
   excerpt: string;
   date: string;
   color: string;
+  slug: string | null;
 };
 
 export function ArticleCard({ article }: { article: Article }) {
   return (
-    <article className="card card-hover overflow-hidden">
+    <article className={`card overflow-hidden ${article.slug ? "card-hover" : ""}`}>
       <div className={`h-32 bg-gradient-to-br ${article.color} p-5`}>
         <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-gray-200">
           {article.category}
@@ -23,9 +24,16 @@ export function ArticleCard({ article }: { article: Article }) {
         </div>
         <h3 className="mt-3 text-lg font-semibold leading-snug">{article.title}</h3>
         <p className="mt-2 text-sm leading-6 text-gray-400">{article.excerpt}</p>
-        <Link href="/blog" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-indigo-400 hover:text-indigo-300">
-          Read article <ArrowRight size={15} />
-        </Link>
+        {article.slug ? (
+          <Link
+            href={`/blog/${article.slug}`}
+            className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-indigo-400 hover:text-indigo-300"
+          >
+            Read article <ArrowRight size={15} />
+          </Link>
+        ) : (
+          <span className="mt-4 inline-flex text-sm text-gray-500">Coming soon</span>
+        )}
       </div>
     </article>
   );
@@ -40,7 +48,7 @@ type Video = {
 
 export function VideoCard({ video }: { video: Video }) {
   return (
-    <article className="card card-hover overflow-hidden">
+    <article className="card overflow-hidden">
       <div className={`group relative grid aspect-video place-items-center bg-gradient-to-br ${video.color}`}>
         <span className="grid h-12 w-12 place-items-center rounded-full bg-white text-indigo-700 shadow-xl transition group-hover:scale-110">
           <Play size={20} fill="currentColor" />
@@ -52,6 +60,7 @@ export function VideoCard({ video }: { video: Video }) {
       <div className="p-5">
         <span className="text-xs font-medium text-indigo-400">{video.topic}</span>
         <h3 className="mt-2 font-semibold">{video.title}</h3>
+        <p className="mt-3 text-sm text-gray-500">Video coming soon</p>
       </div>
     </article>
   );
@@ -73,7 +82,7 @@ export function QuizCard({ quiz }: { quiz: Quiz }) {
         : "text-emerald-300 bg-emerald-500/10";
 
   return (
-    <article className="card card-hover p-5">
+    <article className="card p-5">
       <div className="flex items-start justify-between">
         <span className="grid h-11 w-11 place-items-center rounded-xl bg-indigo-500/10 text-indigo-400">
           <FileQuestion size={22} />
@@ -84,7 +93,7 @@ export function QuizCard({ quiz }: { quiz: Quiz }) {
       <h3 className="mt-2 text-lg font-semibold">{quiz.title}</h3>
       <div className="mt-5 flex items-center justify-between border-t border-line pt-4">
         <span className="text-sm text-gray-500">{quiz.questions} questions</span>
-        <span className="text-sm font-medium text-indigo-400">Start quiz →</span>
+        <span className="text-sm font-medium text-gray-500">Coming soon</span>
       </div>
     </article>
   );

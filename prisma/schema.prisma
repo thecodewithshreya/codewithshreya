@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ArticleLike {
+  id          String   @id @default(cuid())
+  articleSlug String   @map("article_slug")
+  visitorId   String   @map("visitor_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([articleSlug, visitorId])
+  @@map("article_likes")
+}
+
+model ArticleComment {
+  id          String   @id @default(cuid())
+  articleSlug String   @map("article_slug")
+  authorName  String   @map("author_name") @db.VarChar(50)
+  body        String   @db.VarChar(1000)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([articleSlug, createdAt(sort: Desc)])
+  @@map("article_comments")
+}

@@ -113,7 +113,7 @@ export default function Home() {
           />
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((category) => (
-              <div key={category.name} className="card card-hover flex items-center gap-4 p-5">
+              <div key={category.name} className="card flex items-center gap-4 p-5">
                 <span className={`grid h-12 w-12 place-items-center rounded-xl ${category.color}`}>
                   <category.icon size={23} />
                 </span>
@@ -121,7 +121,7 @@ export default function Home() {
                   <h3 className="font-semibold">{category.name}</h3>
                   <p className="mt-1 text-sm text-gray-500">{category.lessons}</p>
                 </div>
-                <ArrowRight className="ml-auto text-gray-600" size={18} />
+                <span className="ml-auto text-xs text-gray-500">Coming soon</span>
               </div>
             ))}
           </div>

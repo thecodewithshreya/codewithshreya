@@ -25,8 +25,8 @@ export default function ContactPage() {
             <p className="mt-2 text-sm leading-6 text-gray-400">
               For questions, content suggestions, and general inquiries.
             </p>
-            <a href="mailto:hello@codewithshreya.com" className="mt-5 inline-block text-sm font-medium text-indigo-400">
-              hello@codewithshreya.com
+            <a href="mailto:thecodewithshreya@gmail.com" className="mt-5 inline-block text-sm font-medium text-indigo-400">
+              thecodewithshreya@gmail.com
             </a>
           </div>
           <div className="card p-7">
@@ -39,11 +39,12 @@ export default function ContactPage() {
             </p>
             <div className="mt-5 flex gap-3">
               {[Youtube, Github, Linkedin].map((Icon, index) => (
-                <span key={index} className="grid h-10 w-10 place-items-center rounded-lg border border-line text-gray-400 hover:text-indigo-300">
+                <span key={index} className="grid h-10 w-10 place-items-center rounded-lg border border-line text-gray-400">
                   <Icon size={18} />
                 </span>
               ))}
             </div>
+            <p className="mt-3 text-xs text-gray-500">Social links coming soon</p>
           </div>
         </div>
         <div className="mx-auto mt-8 max-w-4xl rounded-xl border border-indigo-500/20 bg-indigo-500/[0.06] p-5 text-center text-sm text-gray-400">

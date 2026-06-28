@@ -5,6 +5,7 @@ export const articles = [
     excerpt: "Build intuition for Big O notation with visual examples and common interview patterns.",
     date: "12 min read",
     color: "from-blue-500/30 to-cyan-500/5",
+    slug: "time-and-space-complexity",
   },
   {
     category: "Operating Systems",
@@ -12,6 +13,7 @@ export const articles = [
     excerpt: "Understand how modern operating systems schedule and execute your programs.",
     date: "9 min read",
     color: "from-purple-500/30 to-pink-500/5",
+    slug: null,
   },
   {
     category: "DBMS",
@@ -19,6 +21,7 @@ export const articles = [
     excerpt: "Learn inner, left, right, and full joins through one clear, practical dataset.",
     date: "8 min read",
     color: "from-indigo-500/30 to-blue-500/5",
+    slug: null,
   },
   {
     category: "Computer Networks",
@@ -26,6 +29,7 @@ export const articles = [
     excerpt: "Follow a request from DNS lookup to the server response and browser rendering.",
     date: "11 min read",
     color: "from-emerald-500/30 to-teal-500/5",
+    slug: null,
   },
   {
     category: "Algorithms",
@@ -33,6 +37,7 @@ export const articles = [
     excerpt: "Move beyond simple search and recognize the patterns behind boundary problems.",
     date: "10 min read",
     color: "from-orange-500/30 to-amber-500/5",
+    slug: null,
   },
   {
     category: "Career",
@@ -40,6 +45,7 @@ export const articles = [
     excerpt: "Turn a long list of subjects into a realistic plan you can actually complete.",
     date: "7 min read",
     color: "from-rose-500/30 to-purple-500/5",
+    slug: null,
   },
 ];
 

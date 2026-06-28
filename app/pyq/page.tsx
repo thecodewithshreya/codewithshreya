@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight, Building2, Clock3, FileCheck2, FileText, GraduationCap, Trophy } from "lucide-react";
+import { Building2, Clock3, FileCheck2, FileText, GraduationCap, Trophy } from "lucide-react";
 import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
@@ -33,7 +32,7 @@ export default function PyqPage() {
         <SectionTitle icon={GraduationCap} label="GATE CSE" title="GATE previous year papers" />
         <div className="mt-7 grid gap-5 md:grid-cols-3">
           {gatePapers.map(([title, questions, time]) => (
-            <div key={title} className="card card-hover p-5">
+            <div key={title} className="card p-5">
               <span className="grid h-11 w-11 place-items-center rounded-xl bg-indigo-500/10 text-indigo-400">
                 <FileText size={22} />
               </span>
@@ -42,8 +41,8 @@ export default function PyqPage() {
                 <span className="flex items-center gap-1.5"><FileCheck2 size={14} /> {questions}</span>
                 <span className="flex items-center gap-1.5"><Clock3 size={14} /> {time}</span>
               </div>
-              <span className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-indigo-400">
-                View paper <ArrowRight size={15} />
+              <span className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-gray-500">
+                Paper coming soon
               </span>
             </div>
           ))}
@@ -55,10 +54,11 @@ export default function PyqPage() {
           <SectionTitle icon={Building2} label="University exams" title="College-wise PYQs" />
           <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {colleges.map(([name, count]) => (
-              <div key={name} className="card card-hover p-5">
+              <div key={name} className="card p-5">
                 <Building2 size={21} className="text-purple-400" />
                 <h3 className="mt-4 font-semibold">{name}</h3>
                 <p className="mt-1 text-sm text-gray-500">{count}</p>
+                <p className="mt-3 text-xs text-gray-500">Coming soon</p>
               </div>
             ))}
           </div>
@@ -76,7 +76,7 @@ export default function PyqPage() {
               <h2 className="mt-2 text-2xl font-bold">Simulate the exam experience</h2>
               <p className="mt-2 text-gray-400">Attempt timed questions, review explanations, and track your score.</p>
             </div>
-            <Link href="/quizzes" className="button-primary">Start a quiz <ArrowRight size={16} /></Link>
+            <span className="button-secondary">Quiz mode coming soon</span>
           </div>
         </div>
       </section>

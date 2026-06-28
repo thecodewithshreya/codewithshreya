@@ -28,6 +28,7 @@ export default function BlogPage() {
               {filter}
             </span>
           ))}
+          <span className="self-center px-2 text-xs text-gray-500">More filters coming soon</span>
         </div>
         <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {articles.map((article) => <ArticleCard key={article.title} article={article} />)}

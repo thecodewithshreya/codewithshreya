@@ -8,9 +8,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#070a12",
-        panel: "#0e1322",
-        line: "#20283b",
+        ink: "rgb(var(--color-ink) / <alpha-value>)",
+        panel: "rgb(var(--color-panel) / <alpha-value>)",
+        line: "rgb(var(--color-line) / <alpha-value>)",
       },
       boxShadow: {
         glow: "0 0 70px rgba(79, 70, 229, 0.17)",
