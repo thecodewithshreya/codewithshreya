@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Braces, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -24,11 +25,15 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-ink/85 backdrop-blur-xl">
       <nav className="container-page flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-indigo-600 shadow-lg shadow-indigo-950">
-            <Braces size={20} aria-hidden />
-          </span>
-          <span>CodeWith<span className="text-indigo-400">Shreya</span></span>
+        <Link href="/" aria-label="CodeWithShreya home" className="flex items-center">
+          <Image
+            src="/codewithshreya-logo-final.png"
+            alt=""
+            width={40}
+            height={40}
+            priority
+            className="h-10 w-10"
+          />
         </Link>
 
         <div className="hidden items-center gap-1 lg:flex">

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Braces, Github, Linkedin, Youtube } from "lucide-react";
+import Image from "next/image";
+import { Github, Linkedin, Youtube } from "lucide-react";
 
 const productLinks = [
   ["Articles", "/blog"],
@@ -20,10 +21,14 @@ export function Footer() {
       <div className="container-page grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
         <div className="lg:col-span-2">
           <Link href="/" className="inline-flex items-center gap-2 font-bold">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-indigo-600">
-              <Braces size={18} />
-            </span>
-            CodeWith<span className="-ml-2 text-indigo-400">Shreya</span>
+            <Image
+              src="/codewithshreya-logo-final.png"
+              alt=""
+              width={34}
+              height={34}
+              className="h-[34px] w-[34px]"
+            />
+            CodeWith<span className="-ml-2 text-[#6d35c5]">Shreya</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-6 text-gray-400">
             Practical computer science education for students who want to build
