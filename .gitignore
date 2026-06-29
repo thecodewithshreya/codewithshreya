@@ -11,3 +11,6 @@ data/*.db
 data/*.db-shm
 data/*.db-wal
 app/generated/prisma/
+
+.vercel
+.env*
