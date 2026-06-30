@@ -17,6 +17,7 @@ const themeScript = `
 `;
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://codewithshreya.com"),
   title: {
     default: "CodeWithShreya — Learn Computer Science",
     template: "%s | CodeWithShreya",
