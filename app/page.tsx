@@ -28,9 +28,23 @@ const categories = [
   { name: "Programming", lessons: "40+ lessons", icon: Code2, color: "text-orange-400 bg-orange-500/10" },
 ];
 
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  name: "CodeWithShreya",
+  url: "https://codewithshreya.com",
+  logo: "https://codewithshreya.com/codewithshreya-logo-final.png",
+  description:
+    "Computer Science and programming learning platform for tutorials, quizzes, PYQs, and interview preparation.",
+};
+
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[35rem] w-[35rem] -translate-x-1/2 rounded-full bg-indigo-600/10 blur-3xl" />
         <div className="container-page relative grid items-center gap-14 py-20 lg:grid-cols-[1.08fr_.92fr] lg:py-28">
