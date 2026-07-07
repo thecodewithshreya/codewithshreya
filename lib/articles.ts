@@ -1,6 +1,8 @@
 const articleLoaders = {
   "time-and-space-complexity": () =>
     import("@/content/blog/time-and-space-complexity.mdx"),
+  "sql-joins-without-confusion": () =>
+    import("@/content/blog/sql-joins-without-confusion.mdx"),
 };
 
 export type ArticleSlug = keyof typeof articleLoaders;

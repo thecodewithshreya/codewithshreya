@@ -12,7 +12,7 @@ type Article = {
 
 export function ArticleCard({ article }: { article: Article }) {
   return (
-    <article className={`card overflow-hidden ${article.slug ? "card-hover" : ""}`}>
+    <article className={`card h-full overflow-hidden ${article.slug ? "card-hover" : ""}`}>
       <div className={`h-32 bg-gradient-to-br ${article.color} p-5`}>
         <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-gray-200">
           {article.category}
@@ -48,7 +48,7 @@ type Video = {
 
 export function VideoCard({ video }: { video: Video }) {
   return (
-    <article className="card overflow-hidden">
+    <article className="card h-full overflow-hidden">
       <div className={`group relative grid aspect-video place-items-center bg-gradient-to-br ${video.color}`}>
         <span className="grid h-12 w-12 place-items-center rounded-full bg-white text-indigo-700 shadow-xl transition group-hover:scale-110">
           <Play size={20} fill="currentColor" />
@@ -82,7 +82,7 @@ export function QuizCard({ quiz }: { quiz: Quiz }) {
         : "text-emerald-300 bg-emerald-500/10";
 
   return (
-    <article className="card p-5">
+    <article className="card h-full p-5">
       <div className="flex items-start justify-between">
         <span className="grid h-11 w-11 place-items-center rounded-xl bg-indigo-500/10 text-indigo-400">
           <FileQuestion size={22} />

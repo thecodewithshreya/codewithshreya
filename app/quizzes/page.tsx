@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { QuizCard } from "@/components/content-cards";
 import { PageHero } from "@/components/page-hero";
+import { StaggerReveal } from "@/components/motion/reveal";
 import { quizzes } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -17,9 +18,9 @@ export default function QuizzesPage() {
         description="Challenge yourself with topic-based questions and find the areas that need more practice."
       />
       <section className="container-page py-16">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <StaggerReveal className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {quizzes.map((quiz) => <QuizCard key={quiz.title} quiz={quiz} />)}
-        </div>
+        </StaggerReveal>
       </section>
     </>
   );

@@ -19,9 +19,9 @@ export const articles = [
     category: "DBMS",
     title: "SQL joins without the confusion",
     excerpt: "Learn inner, left, right, and full joins through one clear, practical dataset.",
-    date: "8 min read",
+    date: "10 min read",
     color: "from-indigo-500/30 to-blue-500/5",
-    slug: null,
+    slug: "sql-joins-without-confusion",
   },
   {
     category: "Computer Networks",

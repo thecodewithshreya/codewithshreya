@@ -1,0 +1,4 @@
+interface:
+  display_name: "CodeWithShreya Blog Writer"
+  short_description: "Plan, write, and publish engaging MDX articles"
+  default_prompt: "Use $blog-writer to plan and publish an engaging CodeWithShreya article about a topic."

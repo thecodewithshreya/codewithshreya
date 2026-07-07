@@ -16,6 +16,7 @@ import {
   TerminalSquare,
 } from "lucide-react";
 import { ArticleCard, QuizCard, VideoCard } from "@/components/content-cards";
+import { Reveal, StaggerReveal } from "@/components/motion/reveal";
 import { SectionHeading } from "@/components/section-heading";
 import { articles, quizzes, videos } from "@/lib/data";
 
@@ -45,10 +46,10 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[35rem] w-[35rem] -translate-x-1/2 rounded-full bg-indigo-600/10 blur-3xl" />
+      <section className="hero-grid relative overflow-hidden">
+        <div className="animate-ambient pointer-events-none absolute left-1/2 top-0 h-[35rem] w-[35rem] -translate-x-1/2 rounded-full bg-indigo-600/10 blur-3xl" />
         <div className="container-page relative grid items-center gap-14 py-20 lg:grid-cols-[1.08fr_.92fr] lg:py-28">
-          <div>
+          <Reveal direction="right">
             <span className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-300">
               <Sparkles size={14} /> Your complete CS learning companion
             </span>
@@ -75,11 +76,15 @@ export default function Home() {
                 </span>
               ))}
             </div>
-          </div>
+          </Reveal>
 
-          <div className="relative mx-auto w-full max-w-xl">
+          <Reveal
+            direction="left"
+            delay={0.14}
+            className="relative mx-auto w-full max-w-xl"
+          >
             <div className="absolute -inset-5 rounded-3xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 blur-2xl" />
-            <div className="card relative overflow-hidden shadow-2xl">
+            <div className="animate-float-slow card relative overflow-hidden shadow-2xl">
               <div className="flex items-center gap-2 border-b border-line px-4 py-3">
                 <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
                 <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
@@ -113,7 +118,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -125,9 +130,9 @@ export default function Home() {
             description="Clear, structured resources across the subjects that matter most."
             centered
           />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <StaggerReveal className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((category) => (
-              <div key={category.name} className="card flex items-center gap-4 p-5">
+              <div key={category.name} className="card h-full flex items-center gap-4 p-5">
                 <span className={`grid h-12 w-12 place-items-center rounded-xl ${category.color}`}>
                   <category.icon size={23} />
                 </span>
@@ -138,7 +143,7 @@ export default function Home() {
                 <span className="ml-auto text-xs text-gray-500">Coming soon</span>
               </div>
             ))}
-          </div>
+          </StaggerReveal>
         </div>
       </section>
 
@@ -165,15 +170,15 @@ export default function Home() {
               Browse videos <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <StaggerReveal className="mt-10 grid gap-5 md:grid-cols-3">
             {videos.slice(0, 3).map((video) => <VideoCard key={video.title} video={video} />)}
-          </div>
+          </StaggerReveal>
         </div>
       </section>
 
       <section className="py-20">
         <div className="container-page grid items-center gap-12 lg:grid-cols-2">
-          <div>
+          <Reveal direction="right">
             <p className="eyebrow">Online compiler</p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
               Practice code without leaving your browser
@@ -192,8 +197,8 @@ export default function Home() {
             <Link href="/compiler" className="button-primary mt-8">
               Open compiler <TerminalSquare size={17} />
             </Link>
-          </div>
-          <div className="card overflow-hidden">
+          </Reveal>
+          <Reveal direction="left" delay={0.1} className="card overflow-hidden">
             <div className="flex items-center justify-between border-b border-line px-4 py-3">
               <span className="text-xs text-gray-400">main.py</span>
               <span className="rounded bg-blue-500/10 px-2 py-1 text-xs text-blue-300">Python</span>
@@ -212,7 +217,7 @@ export default function Home() {
               <span className="text-xs uppercase tracking-widest text-gray-600">Output</span>
               <p className="mt-2 font-mono text-sm text-emerald-400">Keep coding, Shreya!</p>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -226,15 +231,15 @@ export default function Home() {
             />
             <Link href="/quizzes" className="button-secondary shrink-0">All quizzes <ArrowRight size={16} /></Link>
           </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <StaggerReveal className="mt-10 grid gap-5 md:grid-cols-3">
             {quizzes.slice(0, 3).map((quiz) => <QuizCard key={quiz.title} quiz={quiz} />)}
-          </div>
+          </StaggerReveal>
         </div>
       </section>
 
       <section className="py-20">
         <div className="container-page">
-          <div className="card relative overflow-hidden bg-gradient-to-br from-indigo-600/20 via-panel to-purple-600/10 p-8 sm:p-12">
+          <Reveal className="card relative overflow-hidden bg-gradient-to-br from-indigo-600/20 via-panel to-purple-600/10 p-8 sm:p-12">
             <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-purple-600/10 blur-3xl" />
             <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_auto]">
               <div>
@@ -253,7 +258,7 @@ export default function Home() {
                 Explore PYQs <FileText size={17} />
               </Link>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
     </>
@@ -283,7 +288,9 @@ function PreviewSection({
           <SectionHeading eyebrow={eyebrow} title={title} description={description} />
           <Link href={href} className="button-secondary shrink-0">{linkLabel} <ArrowRight size={16} /></Link>
         </div>
-        <div className="mt-10 grid gap-5 md:grid-cols-3">{children}</div>
+        <StaggerReveal className="mt-10 grid gap-5 md:grid-cols-3">
+          {children}
+        </StaggerReveal>
       </div>
     </section>
   );

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { hasArticle, loadArticle } from "@/lib/articles";
 import { articles } from "@/lib/data";
 import { BlogEngagement } from "@/components/blog-engagement";
+import { ReadingProgress } from "@/components/motion/reading-progress";
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
@@ -43,8 +44,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const { default: ArticleContent } = await loadArticle(slug);
 
   return (
-    <article className="container-page py-12 sm:py-16">
-      <div className="mx-auto max-w-3xl">
+    <>
+      <ReadingProgress />
+      <article className="container-page py-12 sm:py-16">
+        <div className="mx-auto max-w-3xl">
         <Link
           href="/blog"
           className="inline-flex items-center gap-2 text-sm text-gray-400 transition hover:text-indigo-300"
@@ -70,7 +73,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <ArticleContent />
           </div>
         </BlogEngagement>
-      </div>
-    </article>
+        </div>
+      </article>
+    </>
   );
 }

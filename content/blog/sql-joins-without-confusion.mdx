@@ -1,0 +1,401 @@
+# SQL joins without the confusion
+
+Why does the same SQL query return five rows with `INNER JOIN` but twelve with `LEFT JOIN`?
+
+Nothing random happened. The two joins answered different questions. `INNER JOIN` kept only students with a matching submission. `LEFT JOIN` kept every student, then filled missing submission columns with `NULL`.
+
+By the end of this guide, you will be able to predict a join's output before running it, choose the correct join for a requirement, and avoid a common `WHERE` clause mistake that silently removes unmatched rows.
+
+## The mental model: match first, preserve second
+
+A join combines rows from two table expressions using a condition, usually written in an `ON` clause.
+
+Think about every join in two steps:
+
+1. **Match:** Which pairs of rows satisfy the `ON` condition?
+2. **Preserve:** Which unmatched rows must still appear?
+
+`INNER JOIN` performs only the matching part. Outer joins also preserve rows from the left table, the right table, or both.
+
+<table>
+  <thead>
+    <tr>
+      <th>Join</th>
+      <th>Matched rows</th>
+      <th>Unmatched left rows</th>
+      <th>Unmatched right rows</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>INNER JOIN</code></td>
+      <td>Keep</td>
+      <td>Remove</td>
+      <td>Remove</td>
+    </tr>
+    <tr>
+      <td><code>LEFT JOIN</code></td>
+      <td>Keep</td>
+      <td>Keep</td>
+      <td>Remove</td>
+    </tr>
+    <tr>
+      <td><code>RIGHT JOIN</code></td>
+      <td>Keep</td>
+      <td>Remove</td>
+      <td>Keep</td>
+    </tr>
+    <tr>
+      <td><code>FULL OUTER JOIN</code></td>
+      <td>Keep</td>
+      <td>Keep</td>
+      <td>Keep</td>
+    </tr>
+  </tbody>
+</table>
+
+The words **left** and **right** refer to table position in the query, not to importance or database structure.
+
+## One dataset for every join
+
+Imagine a course platform with twelve students. A project-submission export contains six rows: five match known students, while one references student ID `99`.
+
+The unmatched record intentionally represents data imported from another system. A production relational schema would normally use a foreign key when orphan submissions are invalid.
+
+```sql
+CREATE TABLE students (
+  id INTEGER PRIMARY KEY,
+  name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE project_submissions (
+  id INTEGER PRIMARY KEY,
+  student_id INTEGER NOT NULL,
+  score INTEGER NOT NULL
+);
+
+INSERT INTO students (id, name) VALUES
+  (1, 'Asha'),
+  (2, 'Ravi'),
+  (3, 'Neha'),
+  (4, 'Meera'),
+  (5, 'Arjun'),
+  (6, 'Zoya'),
+  (7, 'Kabir'),
+  (8, 'Isha'),
+  (9, 'Tara'),
+  (10, 'Dev'),
+  (11, 'Riya'),
+  (12, 'Omar');
+
+INSERT INTO project_submissions (id, student_id, score) VALUES
+  (101, 1, 86),
+  (102, 2, 91),
+  (103, 4, 78),
+  (104, 7, 88),
+  (105, 9, 95),
+  (106, 99, 72);
+```
+
+Our join condition will be:
+
+```sql
+s.id = p.student_id
+```
+
+This condition matches five submission rows. Submission `106` has no matching student, and seven students have no submission.
+
+## INNER JOIN: show only successful matches
+
+Use an inner join when the result should contain rows that exist on both sides of the relationship.
+
+```sql
+SELECT
+  s.id,
+  s.name,
+  p.id AS submission_id,
+  p.score
+FROM students AS s
+INNER JOIN project_submissions AS p
+  ON p.student_id = s.id
+ORDER BY s.id;
+```
+
+Result:
+
+<table>
+  <thead>
+    <tr>
+      <th>id</th>
+      <th>name</th>
+      <th>submission_id</th>
+      <th>score</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>Asha</td>
+      <td>101</td>
+      <td>86</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Ravi</td>
+      <td>102</td>
+      <td>91</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Meera</td>
+      <td>103</td>
+      <td>78</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Kabir</td>
+      <td>104</td>
+      <td>88</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>Tara</td>
+      <td>105</td>
+      <td>95</td>
+    </tr>
+  </tbody>
+</table>
+
+The query returns five rows because exactly five pairs satisfy the condition. Students without submissions disappear. The orphan submission also disappears because it has no student.
+
+Use this join to answer: **Which known students submitted the project?**
+
+## LEFT JOIN: keep every student
+
+Now change only the join type:
+
+```sql
+SELECT
+  s.id,
+  s.name,
+  p.id AS submission_id,
+  p.score
+FROM students AS s
+LEFT JOIN project_submissions AS p
+  ON p.student_id = s.id
+ORDER BY s.id;
+```
+
+The result contains twelve rows because `students` is the preserved left table. The five matching students receive submission data. The other seven still appear, with `NULL` in `submission_id` and `score`.
+
+<table>
+  <thead>
+    <tr>
+      <th>id</th>
+      <th>name</th>
+      <th>submission_id</th>
+      <th>score</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>Asha</td>
+      <td>101</td>
+      <td>86</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Ravi</td>
+      <td>102</td>
+      <td>91</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Neha</td>
+      <td><code>NULL</code></td>
+      <td><code>NULL</code></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Meera</td>
+      <td>103</td>
+      <td>78</td>
+    </tr>
+    <tr>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>Omar</td>
+      <td><code>NULL</code></td>
+      <td><code>NULL</code></td>
+    </tr>
+  </tbody>
+</table>
+
+The orphan submission is not preserved because it belongs to the right table.
+
+Use this join to answer: **Show every student and their submission, if one exists.**
+
+That phrase—"if one exists"—is a strong clue that you need a left join.
+
+## Find missing relationships with IS NULL
+
+A left join can identify students who have not submitted:
+
+```sql
+SELECT
+  s.id,
+  s.name
+FROM students AS s
+LEFT JOIN project_submissions AS p
+  ON p.student_id = s.id
+WHERE p.id IS NULL
+ORDER BY s.id;
+```
+
+After the join creates `NULL` values for unmatched students, the `WHERE` clause keeps only those rows. This pattern is often called an anti-join. PostgreSQL expresses it with patterns such as `LEFT JOIN ... IS NULL` or `NOT EXISTS`, rather than an `ANTI JOIN` keyword.
+
+The query returns seven students.
+
+## The WHERE clause trap
+
+Suppose the requirement is: "Show every student, but attach only submissions scoring at least 80."
+
+This query does **not** satisfy that requirement:
+
+```sql
+SELECT s.name, p.score
+FROM students AS s
+LEFT JOIN project_submissions AS p
+  ON p.student_id = s.id
+WHERE p.score >= 80;
+```
+
+For students without submissions, `p.score` is `NULL`. The comparison `NULL >= 80` is not true, so the `WHERE` clause removes those rows. It also removes Meera's score of `78`. The outer join has effectively lost its row-preserving behavior for this condition.
+
+Put the right-table filter in the `ON` clause instead:
+
+```sql
+SELECT s.name, p.score
+FROM students AS s
+LEFT JOIN project_submissions AS p
+  ON p.student_id = s.id
+ AND p.score >= 80
+ORDER BY s.id;
+```
+
+Now all twelve students remain. Qualifying submissions are attached; missing or lower-scoring submissions appear as `NULL`.
+
+The placement answers two different questions:
+
+- `ON p.score >= 80`: Which submission rows are allowed to match?
+- `WHERE p.score >= 80`: Which completed result rows are allowed to remain?
+
+<ArticleQuiz
+  question="You need every customer, including customers with no orders. Which starting point is correct?"
+  options={["customers INNER JOIN orders", "customers LEFT JOIN orders", "customers RIGHT JOIN orders", "customers CROSS JOIN orders"]}
+  answer="customers LEFT JOIN orders"
+/>
+
+## RIGHT JOIN: preserve the right table
+
+`RIGHT JOIN` is the mirror image of `LEFT JOIN`.
+
+```sql
+SELECT
+  s.id,
+  s.name,
+  p.id AS submission_id,
+  p.student_id
+FROM students AS s
+RIGHT JOIN project_submissions AS p
+  ON p.student_id = s.id
+ORDER BY p.id;
+```
+
+All six submissions remain because `project_submissions` is on the preserved right side. For submission `106`, the student columns are `NULL`.
+
+You can usually rewrite a right join as a left join by swapping table order:
+
+```sql
+FROM project_submissions AS p
+LEFT JOIN students AS s
+  ON s.id = p.student_id
+```
+
+Many teams prefer this form because reading "keep everything from the left" consistently reduces mental overhead.
+
+## FULL OUTER JOIN: preserve both sides
+
+A full outer join keeps matches, unmatched left rows, and unmatched right rows.
+
+```sql
+SELECT
+  s.id,
+  s.name,
+  p.id AS submission_id,
+  p.student_id,
+  p.score
+FROM students AS s
+FULL OUTER JOIN project_submissions AS p
+  ON p.student_id = s.id
+ORDER BY s.id NULLS LAST, p.id;
+```
+
+This PostgreSQL query returns thirteen rows:
+
+- five matched student-submission pairs
+- seven students without submissions
+- one orphan submission without a student
+
+Use a full join when you are reconciling two sources and need to see matches plus missing records on either side. Check your database documentation before using it because support and syntax vary between database systems.
+
+## Why a join can return more rows than either table
+
+Do not assume one left row produces at most one result row.
+
+If Asha submits three projects and you join `students` to all submissions, Asha appears three times. One-to-many and many-to-many relationships expand rows because the result contains one row for every matching pair.
+
+Before predicting the row count, ask:
+
+1. Is the join key unique on either side?
+2. Can one row match several rows?
+3. Are unmatched rows preserved?
+4. Does a later `WHERE` clause remove rows?
+
+Join type alone does not determine the final count. Data cardinality and later filters matter too.
+
+## Common mistakes
+
+**Joining on the wrong columns:** Similar names do not guarantee the same meaning. Confirm keys and data types.
+
+**Using `SELECT *`:** Duplicate column names make results harder to read and application mappings easier to break. Select and alias the columns you need.
+
+**Treating `NULL` as a value:** With ordinary equality, `NULL = NULL` is not true. Use `IS NULL` to test for missing values.
+
+**Missing part of a compound key:** If uniqueness depends on `(student_id, project_id)`, joining only on `student_id` can create incorrect extra combinations.
+
+**Assuming output order:** SQL does not guarantee presentation order without `ORDER BY`.
+
+## A practical decision process
+
+Start with the sentence your result must satisfy:
+
+- "Only rows present in both" → `INNER JOIN`
+- "Every left row, with matching details if available" → `LEFT JOIN`
+- "Every right row, with matching details if available" → `RIGHT JOIN`
+- "Everything from both sources" → `FULL OUTER JOIN`
+
+Then inspect cardinality and place filters deliberately.
+
+As a challenge, add a second submission for Asha and predict the row counts before running each query. If your prediction changes from five to six for the inner join and from twelve to thirteen for the left join, you understand the matching-pair model.
+
+## Primary references
+
+- [PostgreSQL tutorial: Joins Between Tables](https://www.postgresql.org/docs/current/tutorial-join.html)
+- [PostgreSQL SELECT reference](https://www.postgresql.org/docs/current/sql-select.html)

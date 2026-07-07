@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ArticleCard } from "@/components/content-cards";
 import { PageHero } from "@/components/page-hero";
+import { StaggerReveal } from "@/components/motion/reveal";
 import { articles } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -30,9 +31,9 @@ export default function BlogPage() {
           ))}
           <span className="self-center px-2 text-xs text-gray-500">More filters coming soon</span>
         </div>
-        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <StaggerReveal className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {articles.map((article) => <ArticleCard key={article.title} article={article} />)}
-        </div>
+        </StaggerReveal>
       </section>
     </>
   );
