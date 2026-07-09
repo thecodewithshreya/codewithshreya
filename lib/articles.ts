@@ -3,6 +3,8 @@ const articleLoaders = {
     import("@/content/blog/time-and-space-complexity.mdx"),
   "sql-joins-without-confusion": () =>
     import("@/content/blog/sql-joins-without-confusion.mdx"),
+  "dotnet-localization-globalization": () =>
+    import("@/content/blog/dotnet-localization-globalization.mdx"),
 };
 
 export type ArticleSlug = keyof typeof articleLoaders;

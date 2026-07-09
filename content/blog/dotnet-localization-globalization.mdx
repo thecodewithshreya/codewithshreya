@@ -1,0 +1,320 @@
+# Make your .NET app speak every user's language
+
+Your ASP.NET Core app shows this price:
+
+```text
+$1,299.50
+```
+
+But a learner from France expects:
+
+```text
+1 299,50 €
+```
+
+And a learner from India may expect dates, currency, validation messages, and page labels to feel natural for their region. Changing the text from English to Hindi is only one part of the work. Formatting numbers, dates, currencies, sorting rules, and validation messages also matter.
+
+That is where two similar-looking terms appear: **globalization** and **localization**. They are related, but they are not the same job.
+
+By the end of this guide, you should be able to explain the difference, configure supported cultures in ASP.NET Core, use resource files for translated strings, and avoid a common mistake: translating text while leaving dates and prices in the wrong format.
+
+## The short difference
+
+Globalization means designing the app so it can work across languages and regions. Localization means adapting that already-globalized app for one specific language or region.
+
+<table>
+  <thead>
+    <tr>
+      <th>Concept</th>
+      <th>Question it answers</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Globalization</td>
+      <td>Can this app support different cultures?</td>
+      <td>Use culture-aware date, number, currency, and string handling.</td>
+    </tr>
+    <tr>
+      <td>Localization</td>
+      <td>What should this app show for this culture?</td>
+      <td>Show Hindi labels, French validation messages, or Spanish page titles.</td>
+    </tr>
+    <tr>
+      <td>Internationalization</td>
+      <td>What is the combined process?</td>
+      <td>Plan the app so globalization and localization both work cleanly.</td>
+    </tr>
+  </tbody>
+</table>
+
+Think of globalization as the wiring and localization as the translated content.
+
+If your app hardcodes `"Welcome"` everywhere, it is not ready for localization. If your app formats every price using `en-US`, it is not properly globalized. A multilingual app needs both.
+
+## Culture: the key idea in .NET
+
+.NET uses culture information to decide how values should be displayed and interpreted. A culture can be neutral, such as `en`, or specific, such as `en-US`, `en-GB`, `fr-FR`, or `hi-IN`.
+
+Two culture properties matter most:
+
+- `CultureInfo.CurrentCulture` controls culture-sensitive formatting and comparison, such as dates, numbers, currencies, sorting, and casing.
+- `CultureInfo.CurrentUICulture` controls which localized UI resources are selected.
+
+That difference is practical. You might use `fr-FR` formatting for dates and currency, while looking up French UI strings from `.resx` resource files.
+
+Here is the simplest console-style example:
+
+```csharp
+using System.Globalization;
+
+var amount = 1299.50m;
+var date = new DateTime(2026, 7, 9);
+
+CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+Console.WriteLine(amount.ToString("C"));
+Console.WriteLine(date.ToString("D"));
+
+CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+Console.WriteLine(amount.ToString("C"));
+Console.WriteLine(date.ToString("D"));
+```
+
+The important point is not the exact visual output on every machine. The point is that the same value can be formatted differently when the current culture changes.
+
+## Running example: a course page
+
+Imagine a small ASP.NET Core course website. It has a course page with:
+
+- a heading: `Start learning`
+- a price: `1299.50`
+- a date: `9 July 2026`
+- a validation message: `Name is required`
+
+For English users, this is fine:
+
+```text
+Start learning
+Price: $1,299.50
+Date: Thursday, July 9, 2026
+Name is required
+```
+
+For another culture, all four pieces may need attention. The heading and validation message need localization. The price and date need globalization.
+
+## Step 1: Register localization services
+
+In an ASP.NET Core app, localization starts by registering localization services. In modern minimal hosting style, this usually goes in `Program.cs`.
+
+```csharp
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+var app = builder.Build();
+
+var supportedCultures = new[]
+{
+    new CultureInfo("en-US"),
+    new CultureInfo("hi-IN"),
+    new CultureInfo("fr-FR")
+};
+
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("en-US"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
+
+app.MapDefaultControllerRoute();
+app.Run();
+```
+
+`SupportedCultures` is used for culture-sensitive formatting such as dates, numbers, and currency. `SupportedUICultures` is used when the app looks up translated UI strings from resources.
+
+In a real app, place `UseRequestLocalization` early enough that later middleware and MVC/Razor can see the selected culture.
+
+## Step 2: Move UI text into resources
+
+Resource files usually use the `.resx` extension. They separate localizable strings from code.
+
+For a shared resource approach, you can create a marker class:
+
+```csharp
+namespace CodeWithShreya;
+
+public class SharedResource
+{
+}
+```
+
+Then create files like:
+
+```text
+Resources/
+  SharedResource.resx
+  SharedResource.hi-IN.resx
+  SharedResource.fr-FR.resx
+```
+
+The default file might contain:
+
+```xml
+<data name="StartLearning" xml:space="preserve">
+  <value>Start learning</value>
+</data>
+
+<data name="NameRequired" xml:space="preserve">
+  <value>Name is required</value>
+</data>
+```
+
+The Hindi resource file can use the same keys with Hindi values:
+
+```xml
+<data name="StartLearning" xml:space="preserve">
+  <value>सीखना शुरू करें</value>
+</data>
+
+<data name="NameRequired" xml:space="preserve">
+  <value>नाम आवश्यक है</value>
+</data>
+```
+
+The key stays stable. The value changes per culture.
+
+## Step 3: Read localized strings with `IStringLocalizer`
+
+In controllers, services, or Razor-related code, `IStringLocalizer<T>` can retrieve strings for the current UI culture.
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+
+public class CoursesController : Controller
+{
+    private readonly IStringLocalizer<SharedResource> _localizer;
+
+    public CoursesController(IStringLocalizer<SharedResource> localizer)
+    {
+        _localizer = localizer;
+    }
+
+    public IActionResult Details()
+    {
+        ViewData["Heading"] = _localizer["StartLearning"];
+        return View();
+    }
+}
+```
+
+If the current UI culture is `hi-IN`, .NET looks for the Hindi resource value. If it cannot find a matching resource, it falls back instead of crashing.
+
+This fallback behavior is useful during development, but do not use it as an excuse to ship half-translated pages. Missing translations are still a product quality issue.
+
+## Step 4: Format values using culture
+
+Localization handles words. Globalization handles values.
+
+For example, do not build currency strings like this:
+
+```csharp
+var text = "$" + price;
+```
+
+That hardcodes a US-style currency symbol and ignores culture-specific formatting.
+
+Use culture-aware formatting:
+
+```csharp
+var price = 1299.50m;
+var releaseDate = new DateTime(2026, 7, 9);
+
+var priceText = price.ToString("C", CultureInfo.CurrentCulture);
+var dateText = releaseDate.ToString("D", CultureInfo.CurrentCulture);
+```
+
+Now the same numeric and date values can be displayed differently depending on the current culture.
+
+The data remains the same. The presentation changes.
+
+## Step 5: Decide how users choose culture
+
+ASP.NET Core request localization can select culture in different ways. The default providers include query string, cookie, and browser `Accept-Language` header.
+
+For testing, query string is convenient:
+
+```text
+/courses/details?culture=hi-IN&ui-culture=hi-IN
+```
+
+For production, a language dropdown usually stores the choice in a cookie:
+
+```csharp
+Response.Cookies.Append(
+    CookieRequestCultureProvider.DefaultCookieName,
+    CookieRequestCultureProvider.MakeCookieValue(new RequestCulture("hi-IN")),
+    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+);
+```
+
+The browser language header is useful, but it should not be the only option. A user may browse from one region, use a device configured in another language, and still prefer your app in English.
+
+## Common mistakes
+
+The first mistake is translating only visible labels. If your heading is Hindi but your price still looks like `$1,299.50`, the page feels unfinished.
+
+The second mistake is localizing data. Do not store ten translated versions of the same date or price. Store the real value once, then format it for the current culture.
+
+The third mistake is using culture-sensitive comparison for internal identifiers. User-facing sorting can be culture-aware. Security checks, protocol values, file extensions, and internal keys usually need ordinal comparison.
+
+The fourth mistake is putting HTML inside translation files. Keep resource values mostly textual. If a sentence needs a link or bold text, structure the UI carefully instead of asking translators to maintain markup.
+
+## What about frontend frameworks?
+
+The same idea applies outside ASP.NET Core. In a Next.js or React app, you may store selected language in local storage, a cookie, or the URL. You may keep translations in JSON files instead of `.resx`.
+
+The concepts remain the same:
+
+- choose the user's language or culture
+- read translated UI strings
+- format numbers, dates, and currencies correctly
+- keep code and content separate
+
+The technology changes. The mental model does not.
+
+<ArticleQuiz
+  question="In .NET, which culture property is mainly used to decide which translated UI resource should be selected?"
+  options={["CurrentCulture", "CurrentUICulture", "InvariantCulture", "NeutralResourcesLanguage"]}
+  answer="CurrentUICulture"
+/>
+
+## Practical summary
+
+Use globalization when you want your app to behave correctly across cultures. Use localization when you want the app to speak a specific language for a specific audience.
+
+For a .NET app, a strong first implementation looks like this:
+
+```text
+1. Register localization services.
+2. Define supported cultures.
+3. Use request localization middleware.
+4. Move UI strings into .resx files.
+5. Use IStringLocalizer for translated text.
+6. Use CultureInfo-aware formatting for dates, numbers, and currencies.
+7. Let the user choose a language explicitly.
+```
+
+Small challenge: take one page in your app and list every piece of user-visible text, date, number, and currency. Mark each item as localization, globalization, or both. That exercise quickly shows whether your app is truly multilingual or only partially translated.
+
+## References
+
+- [Microsoft Learn: Globalization and localization in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/localization)
+- [Microsoft Learn: Globalization in .NET](https://learn.microsoft.com/en-us/dotnet/core/extensions/globalization)
+- [Microsoft Learn: Localization in .NET](https://learn.microsoft.com/en-us/dotnet/core/extensions/localization)

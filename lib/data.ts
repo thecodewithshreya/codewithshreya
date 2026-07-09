@@ -1,7 +1,7 @@
 export const articles = [
   {
     category: "Data Structures",
-    title: "A practical guide to time and space complexity",
+    title: "When your code gets slower, Big O tells you why",
     excerpt: "Build intuition for Big O notation with visual examples and common interview patterns.",
     date: "12 min read",
     color: "from-blue-500/30 to-cyan-500/5",
@@ -17,7 +17,7 @@ export const articles = [
   },
   {
     category: "DBMS",
-    title: "SQL joins without the confusion",
+    title: "Why one SQL join returns 5 rows and another returns 12",
     excerpt: "Learn inner, left, right, and full joins through one clear, practical dataset.",
     date: "10 min read",
     color: "from-indigo-500/30 to-blue-500/5",
@@ -38,6 +38,14 @@ export const articles = [
     date: "10 min read",
     color: "from-orange-500/30 to-amber-500/5",
     slug: null,
+  },
+  {
+    category: "Programming",
+    title: "Make your .NET app speak every user's language",
+    excerpt: "Understand cultures, resource files, translated UI, and culture-aware formatting in .NET apps.",
+    date: "11 min read",
+    color: "from-violet-500/30 to-indigo-500/5",
+    slug: "dotnet-localization-globalization",
   },
   {
     category: "Career",
