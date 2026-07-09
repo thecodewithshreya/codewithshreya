@@ -1,18 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Github, Linkedin, Youtube } from "lucide-react";
+import { T, useI18n } from "@/components/i18n-provider";
 
 const productLinks = [
-  ["Articles", "/blog"],
-  ["Video Lessons", "/videos"],
-  ["Online Compiler", "/compiler"],
-  ["Practice Quizzes", "/quizzes"],
+  ["footer.articles", "/blog"],
+  ["footer.videoLessons", "/videos"],
+  ["footer.onlineCompiler", "/compiler"],
+  ["footer.practiceQuizzes", "/quizzes"],
 ];
 
 const companyLinks = [
-  ["About", "/about"],
-  ["Contact", "/contact"],
-  ["Previous Papers", "/pyq"],
+  ["nav.about", "/about"],
+  ["nav.contact", "/contact"],
+  ["footer.previousPapers", "/pyq"],
 ];
 
 export function Footer() {
@@ -31,8 +34,7 @@ export function Footer() {
             CodeWith<span className="-ml-2 text-[#6d35c5]">Shreya</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-6 text-gray-400">
-            Practical computer science education for students who want to build
-            strong fundamentals and real problem-solving skills.
+            <T k="footer.description" />
           </p>
           <div className="mt-5 flex gap-3">
             {[Youtube, Github, Linkedin].map((Icon, index) => (
@@ -44,15 +46,22 @@ export function Footer() {
               </span>
             ))}
           </div>
-          <p className="mt-2 text-xs text-gray-500">Social links coming soon</p>
+          <p className="mt-2 text-xs text-gray-500">
+            <T k="footer.socialSoon" />
+          </p>
         </div>
-        <FooterColumn title="Learn" links={productLinks} />
-        <FooterColumn title="Explore" links={companyLinks} />
+        <FooterColumn titleKey="footer.learn" links={productLinks} />
+        <FooterColumn titleKey="footer.explore" links={companyLinks} />
       </div>
       <div className="border-t border-line">
         <div className="container-page flex flex-col gap-2 py-5 text-xs text-gray-500 sm:flex-row sm:justify-between">
-          <span>© {new Date().getFullYear()} CodeWithShreya. All rights reserved.</span>
-          <span>Learn. Code. Grow.</span>
+          <span>
+            © {new Date().getFullYear()} CodeWithShreya.{" "}
+            <T k="footer.rights" />
+          </span>
+          <span>
+            <T k="footer.tagline" />
+          </span>
         </div>
       </div>
     </footer>
@@ -60,19 +69,21 @@ export function Footer() {
 }
 
 function FooterColumn({
-  title,
+  titleKey,
   links,
 }: {
-  title: string;
+  titleKey: string;
   links: string[][];
 }) {
+  const { t } = useI18n();
+
   return (
     <div>
-      <h3 className="text-sm font-semibold">{title}</h3>
+      <h3 className="text-sm font-semibold">{t(titleKey)}</h3>
       <div className="mt-4 flex flex-col gap-3">
-        {links.map(([label, href]) => (
+        {links.map(([labelKey, href]) => (
           <Link key={href} href={href} className="text-sm text-gray-400 hover:text-indigo-300">
-            {label}
+            {t(labelKey)}
           </Link>
         ))}
       </div>

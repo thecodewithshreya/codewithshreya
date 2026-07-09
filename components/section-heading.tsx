@@ -1,12 +1,14 @@
+import type { ReactNode } from "react";
+
 export function SectionHeading({
   eyebrow,
   title,
   description,
   centered = false,
 }: {
-  eyebrow: string;
-  title: string;
-  description?: string;
+  eyebrow: ReactNode;
+  title: ReactNode;
+  description?: ReactNode;
   centered?: boolean;
 }) {
   return (

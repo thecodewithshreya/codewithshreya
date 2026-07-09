@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { BookOpen, Code2, Heart, Lightbulb, Target, Users } from "lucide-react";
+import { T } from "@/components/i18n-provider";
 import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
@@ -17,9 +18,9 @@ export default function AboutPage() {
   return (
     <>
       <PageHero
-        eyebrow="About CodeWithShreya"
-        title="Computer science, taught with clarity"
-        description="A learning platform built to help students move from memorizing definitions to truly understanding how technology works."
+        eyebrow={<T k="about.eyebrow" />}
+        title={<T k="about.title" />}
+        description={<T k="about.description" />}
       />
       <section className="container-page py-16">
         <div className="grid items-center gap-12 lg:grid-cols-2">

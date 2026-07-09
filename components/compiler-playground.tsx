@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Code2, Database, Play, RotateCcw } from "lucide-react";
 import { useState } from "react";
+import { useI18n } from "@/components/i18n-provider";
 
 const languages = {
   C: {
@@ -39,21 +40,22 @@ const languages = {
 type Language = keyof typeof languages;
 
 export function CompilerPlayground() {
+  const { t } = useI18n();
   const [language, setLanguage] = useState<Language>("Python");
   const [code, setCode] = useState<string>(languages.Python.code);
   const [input, setInput] = useState("");
-  const [output, setOutput] = useState("Run your code to see the output here.");
+  const [output, setOutput] = useState("compiler.initialOutput");
   const [running, setRunning] = useState(false);
 
   function chooseLanguage(next: Language) {
     setLanguage(next);
     setCode(languages[next].code);
-    setOutput("Run your code to see the output here.");
+    setOutput("compiler.initialOutput");
   }
 
   function runCode() {
     setRunning(true);
-    setOutput("Running...");
+    setOutput("compiler.runningOutput");
     window.setTimeout(() => {
       const sample = language === "Python" && input.trim()
         ? `Keep coding, ${input.trim()}!`
@@ -66,8 +68,10 @@ export function CompilerPlayground() {
   function resetCode() {
     setCode(languages[language].code);
     setInput("");
-    setOutput("Run your code to see the output here.");
+    setOutput("compiler.initialOutput");
   }
+
+  const displayOutput = output.startsWith("compiler.") ? t(output) : output;
 
   return (
     <div>
@@ -103,55 +107,55 @@ export function CompilerPlayground() {
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={resetCode} className="button-secondary !px-3 !py-2">
-              <RotateCcw size={15} /> <span className="hidden sm:inline">Reset</span>
+              <RotateCcw size={15} /> <span className="hidden sm:inline">{t("compiler.reset")}</span>
             </button>
             <button type="button" onClick={runCode} disabled={running} className="button-primary !px-4 !py-2 disabled:opacity-60">
-              <Play size={15} fill="currentColor" /> {running ? "Running" : "Run Code"}
+              <Play size={15} fill="currentColor" /> {running ? t("compiler.running") : t("compiler.runCode")}
             </button>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-[1fr_21rem]">
           <div className="border-b border-line lg:border-b-0 lg:border-r">
-            <div className="border-b border-line px-4 py-2 text-xs uppercase tracking-widest text-gray-600">Code editor</div>
+            <div className="border-b border-line px-4 py-2 text-xs uppercase tracking-widest text-gray-600">{t("compiler.editor")}</div>
             <textarea
               value={code}
               onChange={(event) => setCode(event.target.value)}
               spellCheck={false}
-              aria-label="Code editor"
+              aria-label={t("compiler.editor")}
               className="h-[26rem] w-full resize-none bg-transparent p-5 font-mono text-sm leading-7 text-gray-200 outline-none"
             />
           </div>
           <div className="grid min-h-80 grid-rows-2 lg:h-[28.5rem]">
             <div className="border-b border-line">
-              <div className="border-b border-line px-4 py-2 text-xs uppercase tracking-widest text-gray-600">Input</div>
+              <div className="border-b border-line px-4 py-2 text-xs uppercase tracking-widest text-gray-600">{t("compiler.input")}</div>
               <textarea
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
-                placeholder="Enter program input here..."
-                aria-label="Program input"
+                placeholder={t("compiler.inputPlaceholder")}
+                aria-label={t("compiler.input")}
                 className="h-[calc(100%-2.25rem)] w-full resize-none bg-transparent p-4 font-mono text-sm text-gray-300 outline-none placeholder:text-gray-700"
               />
             </div>
             <div className="bg-black/20">
               <div className="flex items-center justify-between border-b border-line px-4 py-2">
-                <span className="text-xs uppercase tracking-widest text-gray-600">Output</span>
-                {!running && output !== "Run your code to see the output here." && (
+                <span className="text-xs uppercase tracking-widest text-gray-600">{t("compiler.output")}</span>
+                {!running && output !== "compiler.initialOutput" && (
                   <span className="flex items-center gap-1 text-xs text-emerald-400">
-                    <CheckCircle2 size={13} /> Finished
+                    <CheckCircle2 size={13} /> {t("compiler.finished")}
                   </span>
                 )}
               </div>
               <pre className={`whitespace-pre-wrap p-4 font-mono text-sm ${
-                output.startsWith("Run") ? "text-gray-600" : "text-emerald-400"
+                output === "compiler.initialOutput" ? "text-gray-600" : "text-emerald-400"
               }`}>
-                {output}
+                {displayOutput}
               </pre>
             </div>
           </div>
         </div>
         <div className="border-t border-line bg-panel px-4 py-2 text-center text-xs text-gray-600">
-          Demo mode · Sample output only · No code is sent to a server
+          {t("compiler.demo")}
         </div>
       </div>
     </div>

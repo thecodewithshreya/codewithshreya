@@ -1,13 +1,14 @@
 import { Reveal } from "@/components/motion/reveal";
+import type { ReactNode } from "react";
 
 export function PageHero({
   eyebrow,
   title,
   description,
 }: {
-  eyebrow: string;
-  title: string;
-  description: string;
+  eyebrow: ReactNode;
+  title: ReactNode;
+  description: ReactNode;
 }) {
   return (
     <section className="border-b border-line">

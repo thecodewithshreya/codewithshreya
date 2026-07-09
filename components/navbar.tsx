@@ -5,22 +5,25 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useI18n } from "@/components/i18n-provider";
 
 const links = [
-  { href: "/", label: "Home" },
-  { href: "/blog", label: "Blog" },
-  { href: "/videos", label: "Videos" },
-  { href: "/compiler", label: "Compiler" },
-  { href: "/quizzes", label: "Quizzes" },
-  { href: "/pyq", label: "PYQ" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/", labelKey: "nav.home" },
+  { href: "/blog", labelKey: "nav.blog" },
+  { href: "/videos", labelKey: "nav.videos" },
+  { href: "/compiler", labelKey: "nav.compiler" },
+  { href: "/quizzes", labelKey: "nav.quizzes" },
+  { href: "/pyq", labelKey: "nav.pyq" },
+  { href: "/about", labelKey: "nav.about" },
+  { href: "/contact", labelKey: "nav.contact" },
 ];
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { t } = useI18n();
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-ink/85 backdrop-blur-xl">
@@ -49,22 +52,24 @@ export function Navbar() {
                     : "text-gray-400 hover:bg-white/[0.04] hover:text-white"
                 }`}
               >
-                {link.label}
+                {t(link.labelKey)}
               </Link>
             );
           })}
+          <LanguageSwitcher />
           <span className="ml-2">
             <ThemeToggle />
           </span>
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">
+          <LanguageSwitcher />
           <ThemeToggle />
           <button
             type="button"
             onClick={() => setOpen((value) => !value)}
             className="rounded-md border border-line p-2 text-gray-300"
-            aria-label="Toggle navigation"
+            aria-label={t("nav.toggle")}
             aria-expanded={open}
           >
             {open ? <X size={20} /> : <Menu size={20} />}
@@ -85,7 +90,7 @@ export function Navbar() {
                   : "text-gray-300 hover:bg-white/[0.04]"
               }`}
             >
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           ))}
         </div>

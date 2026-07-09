@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { hasArticle, loadArticle } from "@/lib/articles";
 import { articles } from "@/lib/data";
 import { BlogEngagement } from "@/components/blog-engagement";
+import { T } from "@/components/i18n-provider";
 import { ReadingProgress } from "@/components/motion/reading-progress";
 
 type ArticlePageProps = {
@@ -53,7 +54,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           className="inline-flex items-center gap-2 text-sm text-gray-400 transition hover:text-indigo-300"
         >
           <ArrowLeft size={16} />
-          Back to all articles
+          <T k="blog.back" />
         </Link>
 
         <header className="mt-10 border-b border-line pb-8">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 import { Footer } from "@/components/footer";
+import { I18nProvider } from "@/components/i18n-provider";
 import { Navbar } from "@/components/navbar";
 
 const themeScript = `
@@ -63,9 +64,11 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-screen antialiased">
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+        <I18nProvider>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+        </I18nProvider>
       </body>
       <GoogleAnalytics gaId="G-VQM236MCCS" />
     </html>
