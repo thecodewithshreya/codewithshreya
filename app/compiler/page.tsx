@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { CompilerPlayground } from "@/components/compiler-playground";
-import { T } from "@/components/i18n-provider";
 import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
@@ -12,9 +11,9 @@ export default function CompilerPage() {
   return (
     <>
       <PageHero
-        eyebrow={<T k="compiler.eyebrow" />}
-        title={<T k="compiler.title" />}
-        description={<T k="compiler.description" />}
+        eyebrow="Online compiler"
+        title="Write, test, and learn"
+        description="Experiment in a clean Python coding workspace. This preview uses sample output and does not execute code."
       />
       <section className="container-page py-12 sm:py-16">
         <CompilerPlayground />

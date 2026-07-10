@@ -2,7 +2,6 @@
 
 import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { Heart, MessageCircle, Send, Share2 } from "lucide-react";
-import { useI18n } from "@/components/i18n-provider";
 
 type Comment = {
   id: string;
@@ -27,6 +26,15 @@ const emptyData: EngagementData = {
   likeCount: 0,
   liked: false,
   comments: [],
+};
+
+const messages = {
+  activityError: "Article activity is temporarily unavailable.",
+  likeError: "Unable to update your like. Please try again.",
+  linkCopied: "Article link copied.",
+  shareError: "Unable to share this article.",
+  publishError: "Unable to publish comment.",
+  published: "Comment published.",
 };
 
 function getVisitorId() {
@@ -54,7 +62,6 @@ export function BlogEngagement({
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
-  const { t } = useI18n();
 
   useEffect(() => {
     const id = getVisitorId();
@@ -63,13 +70,13 @@ export function BlogEngagement({
     fetch(`/api/articles/${slug}/engagement?visitorId=${encodeURIComponent(id)}`)
       .then(async (response) => {
         if (!response.ok) {
-          throw new Error(t("engagement.activityError"));
+          throw new Error(messages.activityError);
         }
 
         return response.json() as Promise<EngagementData>;
       })
       .then(setData)
-      .catch(() => setMessage(t("engagement.activityError")))
+      .catch(() => setMessage(messages.activityError))
       .finally(() => setLoading(false));
   }, [slug]);
 
@@ -92,7 +99,7 @@ export function BlogEngagement({
       >;
       setData((current) => ({ ...current, ...result }));
     } catch {
-      setMessage(t("engagement.likeError"));
+      setMessage(messages.likeError);
     } finally {
       setSubmitting(false);
     }
@@ -108,10 +115,10 @@ export function BlogEngagement({
       }
 
       await navigator.clipboard.writeText(window.location.href);
-      setMessage(t("engagement.linkCopied"));
+      setMessage(messages.linkCopied);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
-      setMessage(t("engagement.shareError"));
+      setMessage(messages.shareError);
     }
   }
 
@@ -137,7 +144,7 @@ export function BlogEngagement({
       };
 
       if (!response.ok || !result.comment) {
-        throw new Error(result.error ?? t("engagement.publishError"));
+        throw new Error(result.error ?? messages.publishError);
       }
 
       setData((current) => ({
@@ -145,10 +152,10 @@ export function BlogEngagement({
         comments: [result.comment as Comment, ...current.comments],
       }));
       setCommentBody("");
-      setMessage(t("engagement.published"));
+      setMessage(messages.published);
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : t("engagement.publishError"),
+        error instanceof Error ? error.message : messages.publishError,
       );
     } finally {
       setSubmitting(false);
@@ -168,7 +175,7 @@ export function BlogEngagement({
           aria-pressed={data.liked}
         >
           <Heart size={17} fill={data.liked ? "currentColor" : "none"} />
-          {data.liked ? t("engagement.liked") : t("engagement.like")} {!loading && `(${data.likeCount})`}
+          {data.liked ? "Liked" : "Like"} {!loading && `(${data.likeCount})`}
         </button>
         <button
           type="button"
@@ -176,11 +183,11 @@ export function BlogEngagement({
           className="button-secondary !px-4 !py-2"
         >
           <Share2 size={17} />
-          {t("engagement.share")}
+          Share
         </button>
         <span className="inline-flex items-center gap-2 text-sm text-gray-500">
           <MessageCircle size={16} />
-          {data.comments.length} {t("engagement.comments")}
+          {data.comments.length} comments
         </span>
       </div>
 
@@ -189,14 +196,14 @@ export function BlogEngagement({
       {children}
 
       <section className="mt-14 border-t border-line pt-10" aria-labelledby="comments-title">
-        <h2 id="comments-title" className="text-2xl font-bold">{t("engagement.commentsTitle")}</h2>
+        <h2 id="comments-title" className="text-2xl font-bold">Comments</h2>
         <p className="mt-2 text-sm text-gray-400">
-          {t("engagement.join")}
+          Join the discussion. Please keep comments respectful and relevant.
         </p>
 
         <form onSubmit={submitComment} className="card mt-6 space-y-4 p-5">
           <div>
-            <label htmlFor="comment-name" className="text-sm font-medium">{t("engagement.name")}</label>
+            <label htmlFor="comment-name" className="text-sm font-medium">Name</label>
             <input
               id="comment-name"
               value={authorName}
@@ -205,11 +212,11 @@ export function BlogEngagement({
               maxLength={50}
               required
               className="mt-2 w-full rounded-lg border border-line bg-ink/40 px-4 py-3 text-sm outline-none transition focus:border-indigo-500"
-              placeholder={t("engagement.namePlaceholder")}
+              placeholder="Your name"
             />
           </div>
           <div>
-            <label htmlFor="comment-body" className="text-sm font-medium">{t("engagement.comment")}</label>
+            <label htmlFor="comment-body" className="text-sm font-medium">Comment</label>
             <textarea
               id="comment-body"
               value={commentBody}
@@ -219,20 +226,20 @@ export function BlogEngagement({
               required
               rows={4}
               className="mt-2 w-full resize-y rounded-lg border border-line bg-ink/40 px-4 py-3 text-sm outline-none transition focus:border-indigo-500"
-              placeholder={t("engagement.commentPlaceholder")}
+              placeholder="Share your thoughts..."
             />
           </div>
           <button type="submit" disabled={submitting} className="button-primary disabled:opacity-60">
             <Send size={16} />
-            {submitting ? t("engagement.publishing") : t("engagement.publish")}
+            {submitting ? "Publishing..." : "Publish comment"}
           </button>
         </form>
 
         <div className="mt-8 space-y-4">
           {loading ? (
-            <p className="text-sm text-gray-500">{t("engagement.loading")}</p>
+            <p className="text-sm text-gray-500">Loading comments...</p>
           ) : data.comments.length === 0 ? (
-            <p className="text-sm text-gray-500">{t("engagement.empty")}</p>
+            <p className="text-sm text-gray-500">No comments yet. Start the conversation.</p>
           ) : (
             data.comments.map((comment) => (
               <article key={comment.id} className="card p-5">

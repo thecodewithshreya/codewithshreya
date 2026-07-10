@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  BookOpen,
   BrainCircuit,
   CheckCircle2,
   Code2,
@@ -11,12 +10,10 @@ import {
   Layers3,
   MonitorPlay,
   Network,
-  Play,
   Sparkles,
   TerminalSquare,
 } from "lucide-react";
 import { ArticleCard, QuizCard, VideoCard } from "@/components/content-cards";
-import { T } from "@/components/i18n-provider";
 import { Reveal, StaggerReveal } from "@/components/motion/reveal";
 import { SectionHeading } from "@/components/section-heading";
 import { articles, quizzes, videos } from "@/lib/data";
@@ -52,11 +49,11 @@ export default function Home() {
         <div className="container-page relative grid items-center gap-14 py-20 lg:grid-cols-[1.08fr_.92fr] lg:py-28">
           <Reveal direction="right">
             <span className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-300">
-              <Sparkles size={14} /> <T k="home.badge" />
+              <Sparkles size={14} /> Your complete CS learning companion
             </span>
             <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
-              <T k="home.title.before" />{" "}
-              <span className="gradient-text"><T k="home.title.highlight" /></span>
+              Master computer science,{" "}
+              <span className="gradient-text">one concept at a time.</span>
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-400">
               Structured lessons, practical coding, focused quizzes, and exam
@@ -64,16 +61,16 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/blog" className="button-primary">
-                <T k="home.startLearning" /> <ArrowRight size={17} />
+                Start learning <ArrowRight size={17} />
               </Link>
               <Link href="/compiler" className="button-secondary">
-                <Code2 size={17} /> <T k="home.tryCompiler" />
+                <Code2 size={17} /> Try online compiler
               </Link>
             </div>
             <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-gray-400">
-              {["home.benefit.beginner", "home.benefit.exam", "home.benefit.free"].map((key) => (
-                <span key={key} className="flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-indigo-400" /> <T k={key} />
+              {["Beginner friendly", "Exam focused", "Always free"].map((label) => (
+                <span key={label} className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-indigo-400" /> {label}
                 </span>
               ))}
             </div>
@@ -108,13 +105,13 @@ export default function Home() {
               </pre>
               <div className="grid grid-cols-3 border-t border-line">
                 {[
-                  ["100+", "home.stat.lessons"],
-                  ["50+", "home.stat.quizzes"],
-                  ["6", "home.stat.languages"],
-                ].map(([value, labelKey]) => (
-                  <div key={labelKey} className="border-r border-line p-4 text-center last:border-0">
+                  ["100+", "Lessons"],
+                  ["50+", "Quizzes"],
+                  ["1", "Compiler"],
+                ].map(([value, label]) => (
+                  <div key={label} className="border-r border-line p-4 text-center last:border-0">
                     <div className="font-bold text-indigo-300">{value}</div>
-                    <div className="mt-1 text-xs text-gray-500"><T k={labelKey} /></div>
+                    <div className="mt-1 text-xs text-gray-500">{label}</div>
                   </div>
                 ))}
               </div>
@@ -126,9 +123,9 @@ export default function Home() {
       <section className="border-y border-line bg-white/[0.015] py-20">
         <div className="container-page">
           <SectionHeading
-            eyebrow={<T k="home.topics.eyebrow" />}
-            title={<T k="home.topics.title" />}
-            description={<T k="home.topics.description" />}
+            eyebrow="Explore topics"
+            title="Build your computer science foundation"
+            description="Clear, structured resources across the subjects that matter most."
             centered
           />
           <StaggerReveal className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -141,7 +138,7 @@ export default function Home() {
                   <h3 className="font-semibold">{category.name}</h3>
                   <p className="mt-1 text-sm text-gray-500">{category.lessons}</p>
                 </div>
-                <span className="ml-auto text-xs text-gray-500"><T k="common.comingSoon" /></span>
+                <span className="ml-auto text-xs text-gray-500">Coming soon</span>
               </div>
             ))}
           </StaggerReveal>
@@ -150,11 +147,11 @@ export default function Home() {
 
       <PreviewSection
         id="articles"
-        eyebrow={<T k="home.articles.eyebrow" />}
-        title={<T k="home.articles.title" />}
-        description={<T k="home.articles.description" />}
+        eyebrow="Latest articles"
+        title="Learn with in-depth explanations"
+        description="Practical guides that make complex computer science concepts easier to understand."
         href="/blog"
-        linkLabel={<T k="home.articles.link" />}
+        linkLabel="View all articles"
       >
         {articles.slice(0, 3).map((article) => <ArticleCard key={article.title} article={article} />)}
       </PreviewSection>
@@ -163,12 +160,12 @@ export default function Home() {
         <div className="container-page">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <SectionHeading
-              eyebrow={<T k="home.videos.eyebrow" />}
-              title={<T k="home.videos.title" />}
-              description={<T k="home.videos.description" />}
+              eyebrow="Video lessons"
+              title="Watch. Understand. Apply."
+              description="Concise video lessons designed to turn difficult concepts into useful mental models."
             />
             <Link href="/videos" className="button-secondary shrink-0">
-              <T k="home.videos.link" /> <ArrowRight size={16} />
+              Browse videos <ArrowRight size={16} />
             </Link>
           </div>
           <StaggerReveal className="mt-10 grid gap-5 md:grid-cols-3">
@@ -180,27 +177,27 @@ export default function Home() {
       <section className="py-20">
         <div className="container-page grid items-center gap-12 lg:grid-cols-2">
           <Reveal direction="right">
-            <p className="eyebrow"><T k="home.compiler.eyebrow" /></p>
+            <p className="eyebrow">Online compiler</p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              <T k="home.compiler.title" />
+              Practice Python without leaving your browser
             </h2>
             <p className="mt-4 max-w-xl leading-7 text-gray-400">
-              <T k="home.compiler.description" />
+              Write and test Python snippets with a clean, distraction-free editor.
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3 text-sm text-gray-300">
               {[
-                "home.compiler.feature.languages",
-                "home.compiler.feature.input",
-                "home.compiler.feature.feedback",
-                "home.compiler.feature.setup",
-              ].map((key) => (
-                <span key={key} className="flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-indigo-400" /> <T k={key} />
+                "Python demo",
+                "Custom input",
+                "Instant feedback",
+                "No setup needed",
+              ].map((label) => (
+                <span key={label} className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-indigo-400" /> {label}
                 </span>
               ))}
             </div>
             <Link href="/compiler" className="button-primary mt-8">
-              <T k="home.compiler.open" /> <TerminalSquare size={17} />
+              Open compiler <TerminalSquare size={17} />
             </Link>
           </Reveal>
           <Reveal direction="left" delay={0.1} className="card overflow-hidden">
@@ -230,11 +227,11 @@ export default function Home() {
         <div className="container-page">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <SectionHeading
-              eyebrow={<T k="home.quizzes.eyebrow" />}
-              title={<T k="home.quizzes.title" />}
-              description={<T k="home.quizzes.description" />}
+              eyebrow="Test your knowledge"
+              title="Practice with focused quizzes"
+              description="Get immediate feedback and identify the concepts you need to revisit."
             />
-            <Link href="/quizzes" className="button-secondary shrink-0"><T k="home.quizzes.link" /> <ArrowRight size={16} /></Link>
+            <Link href="/quizzes" className="button-secondary shrink-0">All quizzes <ArrowRight size={16} /></Link>
           </div>
           <StaggerReveal className="mt-10 grid gap-5 md:grid-cols-3">
             {quizzes.slice(0, 3).map((quiz) => <QuizCard key={quiz.title} quiz={quiz} />)}
@@ -252,15 +249,15 @@ export default function Home() {
                   <span className="grid h-12 w-12 place-items-center rounded-xl bg-indigo-500/15 text-indigo-300">
                     <GraduationCap size={25} />
                   </span>
-                  <span className="eyebrow"><T k="home.pyq.eyebrow" /></span>
+                  <span className="eyebrow">Previous year questions</span>
                 </div>
-                <h2 className="mt-5 text-3xl font-bold"><T k="home.pyq.title" /></h2>
+                <h2 className="mt-5 text-3xl font-bold">Prepare smarter with real exam questions</h2>
                 <p className="mt-4 max-w-2xl leading-7 text-gray-400">
-                  <T k="home.pyq.description" />
+                  Explore GATE questions, college-wise papers, and exam-style PYQ quizzes in one place.
                 </p>
               </div>
               <Link href="/pyq" className="button-primary">
-                <T k="home.pyq.link" /> <FileText size={17} />
+                Explore PYQs <FileText size={17} />
               </Link>
             </div>
           </Reveal>

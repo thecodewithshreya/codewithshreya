@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Building2, Clock3, FileCheck2, FileText, GraduationCap, Trophy } from "lucide-react";
-import { T } from "@/components/i18n-provider";
 import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
@@ -25,9 +24,9 @@ export default function PyqPage() {
   return (
     <>
       <PageHero
-        eyebrow={<T k="pyq.eyebrow" />}
-        title={<T k="pyq.title" />}
-        description={<T k="pyq.description" />}
+        eyebrow="Previous year questions"
+        title="Practice the questions that matter"
+        description="Prepare with curated GATE papers, university exams, and interactive PYQ quizzes."
       />
       <section className="container-page py-16">
         <SectionTitle icon={GraduationCap} label="GATE CSE" title="GATE previous year papers" />
@@ -43,7 +42,7 @@ export default function PyqPage() {
                 <span className="flex items-center gap-1.5"><Clock3 size={14} /> {time}</span>
               </div>
               <span className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-gray-500">
-                <T k="common.comingSoon" />
+                Coming soon
               </span>
             </div>
           ))}
@@ -59,7 +58,7 @@ export default function PyqPage() {
                 <Building2 size={21} className="text-purple-400" />
                 <h3 className="mt-4 font-semibold">{name}</h3>
                 <p className="mt-1 text-sm text-gray-500">{count}</p>
-                <p className="mt-3 text-xs text-gray-500"><T k="common.comingSoon" /></p>
+                <p className="mt-3 text-xs text-gray-500">Coming soon</p>
               </div>
             ))}
           </div>
@@ -77,7 +76,7 @@ export default function PyqPage() {
               <h2 className="mt-2 text-2xl font-bold">Simulate the exam experience</h2>
               <p className="mt-2 text-gray-400">Attempt timed questions, review explanations, and track your score.</p>
             </div>
-            <span className="button-secondary"><T k="common.comingSoon" /></span>
+            <span className="button-secondary">Coming soon</span>
           </div>
         </div>
       </section>

@@ -1,6 +1,5 @@
 import { ArrowRight, Clock, FileQuestion, Play } from "lucide-react";
 import Link from "next/link";
-import { T } from "@/components/i18n-provider";
 
 type Article = {
   category: string;
@@ -30,10 +29,10 @@ export function ArticleCard({ article }: { article: Article }) {
             href={`/blog/${article.slug}`}
             className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-indigo-400 hover:text-indigo-300"
           >
-            <T k="common.readArticle" /> <ArrowRight size={15} />
+            Read article <ArrowRight size={15} />
           </Link>
         ) : (
-          <span className="mt-4 inline-flex text-sm text-gray-500"><T k="common.comingSoon" /></span>
+          <span className="mt-4 inline-flex text-sm text-gray-500">Coming soon</span>
         )}
       </div>
     </article>
@@ -61,7 +60,7 @@ export function VideoCard({ video }: { video: Video }) {
       <div className="p-5">
         <span className="text-xs font-medium text-indigo-400">{video.topic}</span>
         <h3 className="mt-2 font-semibold">{video.title}</h3>
-        <p className="mt-3 text-sm text-gray-500"><T k="common.videoComingSoon" /></p>
+        <p className="mt-3 text-sm text-gray-500">Video coming soon</p>
       </div>
     </article>
   );
@@ -93,8 +92,8 @@ export function QuizCard({ quiz }: { quiz: Quiz }) {
       <p className="mt-5 text-xs font-medium uppercase tracking-wider text-indigo-400">{quiz.topic}</p>
       <h3 className="mt-2 text-lg font-semibold">{quiz.title}</h3>
       <div className="mt-5 flex items-center justify-between border-t border-line pt-4">
-        <span className="text-sm text-gray-500">{quiz.questions} <T k="common.questions" /></span>
-        <span className="text-sm font-medium text-gray-500"><T k="common.comingSoon" /></span>
+        <span className="text-sm text-gray-500">{quiz.questions} questions</span>
+        <span className="text-sm font-medium text-gray-500">Coming soon</span>
       </div>
     </article>
   );

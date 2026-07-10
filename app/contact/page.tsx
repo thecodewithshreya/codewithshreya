@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Github, Linkedin, Mail, MessageCircle, Youtube } from "lucide-react";
-import { T } from "@/components/i18n-provider";
 import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
@@ -12,9 +11,9 @@ export default function ContactPage() {
   return (
     <>
       <PageHero
-        eyebrow={<T k="contact.eyebrow" />}
-        title={<T k="contact.title" />}
-        description={<T k="contact.description" />}
+        eyebrow="Contact"
+        title="Let's talk about learning"
+        description="Have a question, topic suggestion, or collaboration idea? Reach out through any of the channels below."
       />
       <section className="container-page py-16">
         <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
@@ -45,7 +44,7 @@ export default function ContactPage() {
                 </span>
               ))}
             </div>
-            <p className="mt-3 text-xs text-gray-500"><T k="footer.socialSoon" /></p>
+            <p className="mt-3 text-xs text-gray-500">Social links coming soon</p>
           </div>
         </div>
         <div className="mx-auto mt-8 max-w-4xl rounded-xl border border-indigo-500/20 bg-indigo-500/[0.06] p-5 text-center text-sm text-gray-400">
