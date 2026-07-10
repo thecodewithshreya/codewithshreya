@@ -1,9 +1,9 @@
 export const articles = [
   {
     category: "Data Structures",
-    title: "When your code gets slower, Big O tells you why",
-    excerpt: "Build intuition for Big O notation with visual examples and common interview patterns.",
-    date: "12 min read",
+    title: "Time and space complexity explained with one practical example",
+    excerpt: "Understand Big O, time complexity, and space complexity by comparing three duplicate-checking solutions.",
+    date: "13 min read",
     color: "from-blue-500/30 to-cyan-500/5",
     slug: "time-and-space-complexity",
   },
@@ -26,10 +26,18 @@ export const articles = [
   {
     category: "Computer Networks",
     title: "What really happens when you enter a URL?",
-    excerpt: "Follow a request from DNS lookup to the server response and browser rendering.",
-    date: "11 min read",
+    excerpt: "Follow a request through DNS, CDN, load balancers, app servers, and downstream services.",
+    date: "12 min read",
     color: "from-emerald-500/30 to-teal-500/5",
-    slug: null,
+    slug: "what-happens-when-you-enter-a-url",
+  },
+  {
+    category: "Programming",
+    title: "API works locally but returns 502 after deployment: how to debug it",
+    excerpt: "Learn a practical layer-by-layer process for debugging deployed APIs that fail with 502 Bad Gateway.",
+    date: "12 min read",
+    color: "from-cyan-500/30 to-blue-500/5",
+    slug: "debug-api-502-after-deployment",
   },
   {
     category: "Algorithms",

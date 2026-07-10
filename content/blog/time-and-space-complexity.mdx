@@ -1,124 +1,386 @@
-# When your code gets slower, Big O tells you why
+# Time and space complexity explained with one practical example
 
-When we compare two algorithms, execution time alone is not a reliable measurement. A faster computer, a different programming language, or a smaller input can change the result.
+Suppose a signup form receives a list of usernames from an imported spreadsheet. Before creating accounts, you need to answer one simple question:
 
-**Time and space complexity describe how an algorithm's resource usage grows as its input grows.** This gives us a machine-independent way to reason about performance.
+**Does this list contain any duplicate username?**
 
-## What does Big O measure?
+For 20 usernames, almost any correct solution feels instant. For 200,000 usernames, the wrong solution can become painfully slow or use more memory than expected. Time and space complexity help you predict that behavior before the code reaches production.
 
-Big O notation describes an algorithm's upper growth rate. It focuses on the part of the work that matters most as the input size, usually written as `n`, becomes large.
+By the end of this guide, you will be able to read simple code, estimate its Big O time, estimate its extra space, and explain why two correct solutions can behave very differently as input grows.
 
-For example, consider a linear search:
+## The mental model: count growth, not seconds
+
+Time complexity describes how the amount of work grows when the input grows. Space complexity describes how much extra memory the algorithm needs as the input grows.
+
+The input size is usually written as `n`. In our example, `n` means the number of usernames in the list.
+
+Big O notation does not try to predict exact runtime in milliseconds. Exact runtime depends on hardware, language, compiler, database, network, and many other details. Big O asks a narrower question:
+
+**When `n` becomes large, which part of the work grows fastest?**
+
+That is why complexity analysis ignores small constants and lower-order terms. It is a simplified model, but it is useful because it focuses your attention on growth.
+
+## A first solution: compare every pair
+
+The most direct way to find duplicates is to compare each username with every username after it.
 
 ```ts
-function findNumber(numbers: number[], target: number) {
-  for (const number of numbers) {
-    if (number === target) return true;
+function hasDuplicateUsername(usernames: string[]) {
+  for (let i = 0; i < usernames.length; i++) {
+    for (let j = i + 1; j < usernames.length; j++) {
+      if (usernames[i] === usernames[j]) {
+        return true;
+      }
+    }
   }
 
   return false;
 }
 ```
 
-In the worst case, the function checks every element. If the array contains `n` elements, the amount of work grows with `n`, so its time complexity is **O(n)**.
+This code is correct. If any duplicate pair exists, it eventually finds it.
 
-## Common time complexities
+Now count the comparisons in the worst case. The worst case happens when there is no duplicate, or when the duplicate appears very late. For `n` usernames:
+
+- The first username is compared with `n - 1` later usernames.
+- The second username is compared with `n - 2` later usernames.
+- The third username is compared with `n - 3` later usernames.
+
+The total is:
+
+```text
+(n - 1) + (n - 2) + ... + 1
+```
+
+That grows roughly like `n * n / 2`, so the time complexity is **O(n^2)**.
+
+The function uses only a few variables: `i`, `j`, and the existing input array. It does not create another data structure that grows with `n`, so its extra space complexity is **O(1)**.
+
+This is the first important tradeoff:
+
+```text
+Pair comparison solution: O(n^2) time, O(1) extra space
+```
+
+It saves memory, but it can be very slow for large lists.
+
+## Why O(n^2) grows so quickly
+
+Quadratic growth is easy to underestimate.
+
+<table>
+  <thead>
+    <tr>
+      <th>Number of usernames</th>
+      <th>Approximate pair comparisons</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>100</td>
+      <td>4,950</td>
+    </tr>
+    <tr>
+      <td>1,000</td>
+      <td>499,500</td>
+    </tr>
+    <tr>
+      <td>10,000</td>
+      <td>49,995,000</td>
+    </tr>
+    <tr>
+      <td>100,000</td>
+      <td>4,999,950,000</td>
+    </tr>
+  </tbody>
+</table>
+
+When the input becomes 10 times larger, the work becomes about 100 times larger. That is the practical meaning of `O(n^2)`.
+
+The code did not become less correct. The input size exposed the cost of the approach.
+
+## A faster solution: remember what you have seen
+
+Instead of comparing every pair, store usernames as you scan the list. If you see a username that is already stored, you found a duplicate.
+
+```ts
+function hasDuplicateUsername(usernames: string[]) {
+  const seen = new Set<string>();
+
+  for (const username of usernames) {
+    if (seen.has(username)) {
+      return true;
+    }
+
+    seen.add(username);
+  }
+
+  return false;
+}
+```
+
+This version usually checks each username once. `Set.has` and `Set.add` are commonly treated as constant-time operations on average for this kind of analysis.
+
+The time complexity is **O(n)** because the loop grows directly with the number of usernames.
+
+The extra space complexity is **O(n)** because the `seen` set can store up to `n` usernames when there are no duplicates.
+
+```text
+Set solution: O(n) time, O(n) extra space
+```
+
+This is often the better production choice for large input because it trades memory for speed. It is not "always better"; it is better when the extra memory is acceptable and the list can be large enough for quadratic time to hurt.
+
+## Same problem, different tradeoff: sort first
+
+There is another common strategy. If duplicate usernames exist, equal values will sit next to each other after sorting.
+
+```ts
+function hasDuplicateUsername(usernames: string[]) {
+  const sorted = [...usernames].sort();
+
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === sorted[i - 1]) {
+      return true;
+    }
+  }
+
+  return false;
+}
+```
+
+This code has two phases:
+
+1. Copy and sort the usernames.
+2. Scan the sorted list once.
+
+The scan is **O(n)**. The sort is usually **O(n log n)** for general-purpose comparison sorting. The total becomes:
+
+```text
+O(n log n) + O(n)
+```
+
+Big O keeps the fastest-growing term, so the time complexity is **O(n log n)**.
+
+The extra space is **O(n)** because `[...usernames]` creates a copy. Depending on the language and sorting implementation, sorting itself may also need extra memory. For beginner analysis, it is enough to say this version uses extra memory that grows with `n`.
+
+```text
+Sort-and-scan solution: O(n log n) time, O(n) extra space
+```
+
+Why use it if the `Set` solution is faster? Sometimes sorted output is useful for another step. Sometimes you want deterministic grouping. Sometimes memory or platform details change the decision. Complexity is not a rule that chooses the algorithm for you; it gives you the vocabulary to compare choices.
+
+## Common time complexities in one table
+
+Use this table as a recognition guide, not as something to memorize mechanically.
 
 <table>
   <thead>
     <tr>
       <th>Complexity</th>
       <th>Name</th>
-      <th>Typical example</th>
+      <th>Typical pattern</th>
+      <th>Example question</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>O(1)</td>
       <td>Constant</td>
-      <td>Reading an array element by index</td>
+      <td>Do a fixed amount of work</td>
+      <td>Read `usernames[0]`</td>
     </tr>
     <tr>
       <td>O(log n)</td>
       <td>Logarithmic</td>
-      <td>Binary search</td>
+      <td>Cut the search space each step</td>
+      <td>Binary search in sorted usernames</td>
     </tr>
     <tr>
       <td>O(n)</td>
       <td>Linear</td>
-      <td>Scanning a list</td>
+      <td>Visit each item once</td>
+      <td>Scan all usernames</td>
     </tr>
     <tr>
       <td>O(n log n)</td>
       <td>Linearithmic</td>
-      <td>Efficient comparison sorting</td>
+      <td>Sort or divide-and-combine efficiently</td>
+      <td>Sort usernames, then scan</td>
     </tr>
     <tr>
-      <td>O(n²)</td>
+      <td>O(n^2)</td>
       <td>Quadratic</td>
-      <td>Comparing every pair</td>
+      <td>Compare many pairs</td>
+      <td>Nested pair comparison</td>
     </tr>
   </tbody>
 </table>
 
-The goal is not to memorize the table. Focus on how many more operations are required when the input doubles.
+## Where O(log n) fits
 
-## Ignore constants and smaller terms
+Logarithmic time appears when each step removes a large part of the remaining work.
 
-Suppose an algorithm performs `3n + 10` operations. Big O simplifies this to **O(n)** because the linear term controls the growth for large inputs.
-
-Similarly:
-
-```text
-n² + 5n + 20  →  O(n²)
-```
-
-This does not mean constants never matter in real software. It means Big O answers a specific question about growth rather than exact runtime.
-
-## Nested loops are not always O(n²)
-
-Two nested loops often indicate quadratic complexity:
+If usernames are already sorted, you can check whether one username exists using binary search:
 
 ```ts
-for (const first of numbers) {
-  for (const second of numbers) {
-    compare(first, second);
+function containsUsername(sortedUsernames: string[], target: string) {
+  let left = 0;
+  let right = sortedUsernames.length - 1;
+
+  while (left <= right) {
+    const middle = Math.floor((left + right) / 2);
+
+    if (sortedUsernames[middle] === target) return true;
+
+    if (sortedUsernames[middle] < target) {
+      left = middle + 1;
+    } else {
+      right = middle - 1;
+    }
   }
+
+  return false;
 }
 ```
 
-Both loops visit all `n` elements, producing `n × n` operations: **O(n²)**.
+Every loop cuts the remaining search range roughly in half. That gives **O(log n)** time and **O(1)** extra space.
 
-However, do not count loops mechanically. If two pointers move through the same array and each pointer only moves forward, the total work may still be **O(n)**.
+This does not mean binary search solves every problem. It requires sorted data and a question that can eliminate half the search space safely. If the data is unsorted, you must account for the cost of sorting first.
 
 <ArticleQuiz
-  question="A loop halves the remaining input after every step. What is its likely time complexity?"
-  options={["O(1)", "O(log n)", "O(n)", "O(n²)"]}
-  answer="O(log n)"
+  question="A function scans a list once and stores each visited value in a Set. What are the usual time and extra space complexities?"
+  options={["O(1) time, O(n) space", "O(n) time, O(1) space", "O(n) time, O(n) space", "O(n^2) time, O(1) space"]}
+  answer="O(n) time, O(n) space"
 />
 
-## What is space complexity?
+## How to analyze a piece of code
 
-Space complexity describes how much additional memory an algorithm needs as the input grows.
+Use this process when you see a new function:
 
-This function creates another array containing `n` values:
+1. Define `n`.
+2. Identify the repeated work.
+3. Count how many times that work can happen in the worst case.
+4. Keep the dominant growth term.
+5. Count extra memory separately.
+
+For our first duplicate-checking function:
+
+- `n` is the number of usernames.
+- The repeated work is a comparison.
+- The worst case compares many pairs.
+- Pair comparisons grow as `n^2`.
+- Only a few loop variables are allocated.
+
+So the result is **O(n^2) time** and **O(1) extra space**.
+
+For the `Set` version:
+
+- `n` is still the number of usernames.
+- The repeated work is checking and inserting into the set.
+- Each username is processed once.
+- The set can grow to `n` items.
+
+So the result is **O(n) time** and **O(n) extra space**.
+
+## Mistakes beginners often make
+
+**Counting loops without understanding them:** Nested loops often mean `O(n^2)`, but not always. If two pointers move forward through the same list and never move backward, the total work may still be `O(n)`.
+
+**Forgetting the cost of helper methods:** A line like `array.includes(value)` inside a loop can hide another scan. That can turn code that looks linear into quadratic code.
 
 ```ts
-function doubleValues(numbers: number[]) {
-  return numbers.map((number) => number * 2);
+function hasDuplicateUsername(usernames: string[]) {
+  const seen: string[] = [];
+
+  for (const username of usernames) {
+    if (seen.includes(username)) {
+      return true;
+    }
+
+    seen.push(username);
+  }
+
+  return false;
 }
 ```
 
-Its additional space complexity is **O(n)**. An in-place algorithm that uses only a few variables usually has **O(1)** additional space.
+This looks like one loop, but `seen.includes(username)` scans the `seen` array. In the worst case, the total work grows like pair comparison: **O(n^2)**.
 
-Recursive functions also consume call-stack space. A recursive function with a maximum depth of `n` generally requires **O(n)** stack space.
+**Mixing time and space into one answer:** "This is O(n)" is incomplete if the question asks for both. Say "O(n) time and O(n) extra space" or "O(n) time and O(1) extra space."
 
-## A practical analysis process
+**Ignoring input size:** For very small inputs, the simplest correct solution may be fine. Complexity matters most when input size can grow.
 
-1. Define the input size.
-2. Identify the operation that repeats.
-3. Count how that operation grows with the input.
-4. Keep the dominant term.
-5. Analyze additional memory separately.
+**Assuming Big O measures everything:** Big O does not replace benchmarking. It helps you choose what is worth measuring and which algorithm is likely to scale.
 
-Complexity analysis is a decision-making tool, not a competition to find the smallest notation. Start with correctness and clarity, then optimize when input size or measurements show that performance matters.
+## Space complexity includes new memory, not the input itself
+
+When we say "extra space," we usually do not count the input array that was already given to the function. We count additional memory the algorithm allocates.
+
+```ts
+function firstUsername(usernames: string[]) {
+  return usernames[0];
+}
+```
+
+This is **O(1)** extra space. It does not copy the list.
+
+```ts
+function copyUsernames(usernames: string[]) {
+  return [...usernames];
+}
+```
+
+This is **O(n)** extra space because the returned array grows with the input.
+
+Recursive functions can also use extra space through the call stack. If a recursive function goes `n` calls deep, its stack space is usually **O(n)**. If it repeatedly splits the problem in half and the deepest path has `log n` calls, the stack space may be **O(log n)**.
+
+## Choosing between correct solutions
+
+For duplicate usernames, the three solutions give different tradeoffs:
+
+<table>
+  <thead>
+    <tr>
+      <th>Approach</th>
+      <th>Time</th>
+      <th>Extra space</th>
+      <th>When it may make sense</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Compare every pair</td>
+      <td>O(n^2)</td>
+      <td>O(1)</td>
+      <td>Tiny lists or strict memory limits</td>
+    </tr>
+    <tr>
+      <td>Use a Set</td>
+      <td>O(n)</td>
+      <td>O(n)</td>
+      <td>Large lists when memory is acceptable</td>
+    </tr>
+    <tr>
+      <td>Sort, then scan</td>
+      <td>O(n log n)</td>
+      <td>O(n)</td>
+      <td>When sorted data is also useful</td>
+    </tr>
+  </tbody>
+</table>
+
+The best solution depends on constraints. In most application code, the `Set` version is a strong default for duplicate detection because it is simple and linear. In an interview, explain the tradeoff rather than just naming the Big O.
+
+## Practical summary
+
+Time complexity asks how work grows. Space complexity asks how extra memory grows. Big O ignores constant details so you can focus on the dominant growth pattern.
+
+For analysis, do not start by memorizing formulas. Start with a concrete question:
+
+1. What is `n`?
+2. What operation repeats?
+3. Does the code scan, halve, sort, or compare pairs?
+4. What new memory grows with the input?
+
+Small challenge: write the duplicate-username problem in your preferred language using all three approaches: pair comparison, `Set`, and sort-and-scan. Then test each one with 100, 10,000, and 100,000 generated usernames. The exact timings will vary, but the growth pattern will make Big O feel real.

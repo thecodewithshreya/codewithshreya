@@ -1,0 +1,391 @@
+# API works locally but returns 502 after deployment: how to debug it
+
+Your API passes every local test. `http://localhost:3000/api/health` returns `200 OK`. You deploy it, open the production URL, and get:
+
+```text
+502 Bad Gateway
+```
+
+The first mistake is to debug this like a normal application bug. A `502` usually means the request reached a gateway, load balancer, reverse proxy, CDN, or platform router, but that gateway did not get a valid response from your app server. In other words, the broken part is often between the public URL and the process that runs your code.
+
+By the end of this guide, you will have a practical debugging order for deployed APIs: identify who generated the `502`, check whether the app process is alive, verify port and host binding, inspect environment variables, test dependencies, and separate timeout problems from crash problems.
+
+## The mental model: follow the request chain
+
+Locally, the request path is short:
+
+```text
+browser or curl -> local API process
+```
+
+After deployment, the path usually has more pieces:
+
+```text
+browser or curl
+  -> DNS
+  -> CDN or edge network
+  -> load balancer or reverse proxy
+  -> deployed app process
+  -> database, cache, storage, or another API
+```
+
+HTTP defines `502 Bad Gateway` for a server acting as a gateway or proxy that receives an invalid response from an inbound server while trying to complete the request. In practical debugging language: the public-facing server asked your app for a response, but the app did not answer in a usable way.
+
+That does not prove your code is wrong. It also does not prove your hosting provider is broken. It tells you where to start looking: the boundary between the gateway and the upstream app.
+
+## Start with one question: who returned the 502?
+
+Before changing code, inspect the response headers.
+
+```bash
+curl -i https://api.example.com/health
+```
+
+Look for clues:
+
+```text
+HTTP/2 502
+server: nginx
+via: 1.1 platform-router
+x-vercel-id: ...
+cf-ray: ...
+content-type: text/html
+```
+
+The headers tell you which layer produced the error page. If the response says `server: nginx`, the error likely came from a reverse proxy. If it has CDN-specific headers, the edge may be reporting that it could not reach the origin. If the body is your API's JSON error format, then your application probably handled the request and returned a `502` itself.
+
+That distinction matters because it changes the next step.
+
+<table>
+  <thead>
+    <tr>
+      <th>What you see</th>
+      <th>Likely meaning</th>
+      <th>Next place to check</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>HTML error page from proxy or platform</td>
+      <td>Gateway could not get a valid app response</td>
+      <td>App logs, port binding, startup command</td>
+    </tr>
+    <tr>
+      <td>Your API's JSON error format</td>
+      <td>Your app code returned the error</td>
+      <td>Application handler and downstream calls</td>
+    </tr>
+    <tr>
+      <td>Works for one route, fails for another</td>
+      <td>Route-specific crash, timeout, or dependency issue</td>
+      <td>Route logs and dependency calls</td>
+    </tr>
+    <tr>
+      <td>Fails only after a delay</td>
+      <td>Timeout or slow startup</td>
+      <td>Timeout settings, cold start, database queries</td>
+    </tr>
+  </tbody>
+</table>
+
+## Step 1: check whether the app actually started
+
+A deployed API can build successfully and still fail at runtime.
+
+Open the deployment logs and find the first runtime error after the app starts. You are looking for messages such as:
+
+```text
+Error: Cannot find module
+Error: listen EADDRINUSE
+Error: missing DATABASE_URL
+PrismaClientInitializationError
+ModuleNotFoundError
+Unhandled exception
+Process exited with code 1
+```
+
+If the process exits immediately, the gateway has nothing healthy to forward traffic to. Local success does not rule this out because your laptop may have environment variables, files, package versions, or services that production does not have.
+
+For a Node or Express style API, confirm the production start command runs the compiled server:
+
+```json
+{
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js"
+  }
+}
+```
+
+If production runs `npm start` but your `start` script is missing, points to a development server, or starts the wrong file, the platform may deploy a container that never serves HTTP correctly.
+
+## Step 2: verify the port and host binding
+
+One of the most common deployment-only causes is listening on the wrong port.
+
+Locally, this may work:
+
+```js
+app.listen(3000, () => {
+  console.log("API running on port 3000");
+});
+```
+
+In production, many platforms inject a port through an environment variable. Your app must listen on that value:
+
+```js
+const port = process.env.PORT || 3000;
+
+app.listen(port, "0.0.0.0", () => {
+  console.log(`API running on port ${port}`);
+});
+```
+
+Two details matter:
+
+1. Use the platform-provided `PORT` when it exists.
+2. Bind to an address reachable from outside the process, commonly `0.0.0.0` in containerized environments.
+
+Binding only to `localhost` can mean "accept connections from inside this container or VM only." The app appears healthy from its own shell but unreachable to the platform router.
+
+The same idea applies outside Node:
+
+```bash
+# Example shape, not a universal command
+HOST=0.0.0.0 PORT=$PORT python app.py
+```
+
+If the platform has a health check route, make sure the route exists and responds quickly:
+
+```http
+GET /health
+```
+
+```json
+{ "ok": true }
+```
+
+Keep this route boring. It should prove the process is alive without depending on a slow third-party service.
+
+## Step 3: compare local and production environment variables
+
+After port problems, missing configuration is the next suspect.
+
+Create a checklist of required variables:
+
+```text
+DATABASE_URL
+JWT_SECRET
+REDIS_URL
+STRIPE_SECRET_KEY
+NODE_ENV
+ALLOWED_ORIGINS
+```
+
+Then compare what production actually has. Do not print secret values into logs. Print only whether each variable exists:
+
+```js
+const requiredEnv = ["DATABASE_URL", "JWT_SECRET"];
+
+for (const name of requiredEnv) {
+  if (!process.env[name]) {
+    console.error(`Missing required environment variable: ${name}`);
+    process.exit(1);
+  }
+}
+```
+
+Failing fast is better than starting a half-configured server that crashes on the first real request. A clear startup error is easier to debug than a generic `502`.
+
+Also check differences caused by `NODE_ENV=production`, build-time variables, and server-only variables. Some frameworks separate variables available during build from variables available at runtime. A value that existed during `npm run build` may not exist when the deployed server handles requests.
+
+## Step 4: reproduce the deployed environment as closely as possible
+
+"Works locally" often means "works in a different environment."
+
+Try running the production command locally:
+
+```bash
+npm run build
+npm run start
+```
+
+If the deployed API runs in Docker, test the container:
+
+```bash
+docker build -t api-debug .
+docker run --rm -p 3000:3000 --env-file .env.production api-debug
+curl -i http://localhost:3000/health
+```
+
+This catches problems hidden by development tools:
+
+- TypeScript runs locally through `ts-node`, but production expects compiled JavaScript.
+- A file import works on Windows or macOS but fails on Linux because of case sensitivity.
+- A dependency is installed as a dev dependency but needed at runtime.
+- The build output path does not match the start command.
+- Static files are read from a local path that does not exist in the deployed container.
+
+If the issue appears only in the built app, stop debugging the gateway and inspect the build/start path.
+
+## Step 5: test the app from inside the deployment network
+
+Many platforms provide a shell, console, or one-off command runner. Use it to test the app from near where it runs.
+
+The goal is to separate external routing from internal app behavior:
+
+```bash
+curl -i http://127.0.0.1:$PORT/health
+curl -i http://localhost:$PORT/health
+```
+
+If this works inside the container but the public URL returns `502`, the app is alive and the problem is probably routing, binding, health checks, domain configuration, or reverse proxy configuration.
+
+If this fails inside the container too, the public gateway is not the main problem. The app process is not listening, not healthy, or crashing.
+
+For a reverse proxy setup, also check the upstream target:
+
+```nginx
+location /api/ {
+  proxy_pass http://127.0.0.1:3000/;
+}
+```
+
+If your app listens on port `8080` but Nginx forwards to `3000`, the gateway will fail even though both pieces are individually installed.
+
+## Step 6: separate crashes from timeouts
+
+A crash and a timeout can both become a `502` depending on the platform. They feel similar from the browser but look different in logs.
+
+A crash usually shows a stack trace, process restart, or exit code near the request time:
+
+```text
+GET /api/report
+TypeError: Cannot read properties of undefined
+Process exited with code 1
+```
+
+A timeout usually shows a long duration, an upstream timeout message, or no application log after the request starts:
+
+```text
+GET /api/report started
+upstream timed out
+```
+
+For slow routes, add timing logs around each expensive step:
+
+```js
+console.time("load-user");
+const user = await loadUser(userId);
+console.timeEnd("load-user");
+
+console.time("query-report");
+const report = await buildReport(user.id);
+console.timeEnd("query-report");
+```
+
+If the database query takes 45 seconds and the platform gateway waits 30 seconds, your local API may "work" while production still fails. The fix might be indexing, pagination, background jobs, caching, or increasing a timeout if the platform allows it.
+
+Do not make every timeout longer by default. First ask whether the request should be that slow.
+
+## Step 7: check database and network access
+
+Local apps often connect to local databases. Production apps must reach managed databases over the network.
+
+Check these deployment-only differences:
+
+- The production database URL is present and correctly formatted.
+- The database allows connections from the deployed environment.
+- SSL requirements match the database provider.
+- Migrations have run.
+- The production user has the required permissions.
+- The app is not trying to connect to `localhost` for a database that only exists on your laptop.
+
+A classic broken production value looks like this:
+
+```text
+DATABASE_URL=postgres://user:pass@localhost:5432/app
+```
+
+Inside a deployed container, `localhost` means the container itself, not your laptop and not a managed database. Use the actual production database host.
+
+Also inspect calls to other APIs. If your route calls a payment API, email API, internal service, or object storage bucket, a blocked outbound request or missing secret can turn one endpoint into a `502` while the health route stays green.
+
+## Step 8: reduce the problem to the smallest route
+
+When production is failing, avoid debugging the full application at once. Add or verify three routes:
+
+```js
+app.get("/health", (req, res) => {
+  res.json({ ok: true });
+});
+
+app.get("/debug/env", (req, res) => {
+  res.json({
+    hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+    nodeEnv: process.env.NODE_ENV,
+  });
+});
+
+app.get("/debug/db", async (req, res) => {
+  await db.query("select 1");
+  res.json({ database: "ok" });
+});
+```
+
+Protect or remove debug routes before shipping broadly. They are temporary tools, not product features.
+
+The route ladder gives you a clean diagnosis:
+
+- `/health` fails: process, port, start command, routing, or proxy.
+- `/health` works but `/debug/env` fails: route registration or runtime code path.
+- `/debug/env` works but `/debug/db` fails: database configuration or network.
+- Debug routes work but a business route fails: route-specific logic, data, or timeout.
+
+This is faster than reading random logs because every route tests one layer.
+
+<ArticleQuiz
+  question="A deployed API returns 502 on every route, and the logs show the process exits with 'missing DATABASE_URL' during startup. What should you fix first?"
+  options={["Increase the gateway timeout", "Add the production environment variable", "Clear the browser cache", "Change the HTTP method"]}
+  answer="Add the production environment variable"
+/>
+
+## Common mistakes when debugging 502
+
+**Changing frontend code first:** A gateway error is usually server-side or routing-side. Confirm the API independently with `curl`.
+
+**Ignoring platform logs:** Browser output is too generic. Runtime logs usually reveal whether the process crashed, timed out, or never started.
+
+**Testing only the root route:** `/` may work while `/api/users` fails because the API route touches a database or secret.
+
+**Assuming local ports apply in production:** Hardcoded ports are fragile. Respect the platform's injected port.
+
+**Using localhost for external services:** In production, `localhost` points to the deployed machine or container, not your development laptop.
+
+**Hiding startup failures:** Catching every error and continuing startup can make a broken app look alive until the first request.
+
+**Skipping migrations:** A route can crash only in production because the table or column exists locally but not in the deployed database.
+
+## A practical debugging order
+
+Use this order when the API works locally but returns `502` after deployment:
+
+1. Run `curl -i` against the production URL and identify which layer returned the response.
+2. Check deployment runtime logs around startup and around the failed request.
+3. Confirm the app process is running and listening on the platform-provided port.
+4. Verify host binding, especially in containers.
+5. Compare required environment variables without logging secret values.
+6. Run the production build and start command locally.
+7. Test the app from inside the deployment environment if possible.
+8. Hit a simple health route, then add one dependency at a time.
+9. Separate crashes from slow requests and timeouts.
+10. Check database connectivity, migrations, and external service access.
+
+The key is to move from the outside inward. A `502` is not a full diagnosis. It is a clue that the gateway and the upstream app failed to complete a clean handoff. Once you test each layer in order, the problem usually becomes much smaller: wrong port, missing secret, crashed process, blocked database, bad proxy target, or a route that takes too long.
+
+Small challenge: take one deployed API you own and add a `/health` route that does not touch the database. Then add a separate `/ready` route that checks required dependencies. If those two routes answer different questions, your next production incident will be easier to isolate.
+
+## Primary references
+
+- [RFC 9110: 502 Bad Gateway](https://www.rfc-editor.org/rfc/rfc9110.html#name-502-bad-gateway)
+- [MDN: 502 Bad Gateway](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/502)

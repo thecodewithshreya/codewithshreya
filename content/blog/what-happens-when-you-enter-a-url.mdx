@@ -1,0 +1,356 @@
+# What really happens when you enter a URL?
+
+You type `https://shop.example.com/products/42` into the browser and press Enter. A moment later, a product page appears.
+
+That small action crosses several systems. The browser needs to find the server, connect securely, pass through edge infrastructure, reach the application, and often wait while the application talks to a database, cache, storage service, or another API.
+
+By the end of this guide, you will be able to follow a request through each major layer:
+
+```text
+DNS
+  -> CDN or edge network
+  -> load balancer or reverse proxy
+  -> deployed app process
+  -> database, cache, storage, or another API
+```
+
+This mental model helps with computer networks, web development, and real debugging. When a site is slow or an API returns `502`, you need to know which layer might be failing.
+
+## The running example
+
+We will trace one request:
+
+```text
+GET https://shop.example.com/products/42
+```
+
+The user wants product `42`. The browser knows the URL, but it does not automatically know which machine should receive the request or whether a cached response already exists nearby.
+
+Think of the request as a relay race. Each layer has a different job. Some layers only route the request. Some can answer directly. Some forward it deeper into the system.
+
+## Layer 1: DNS turns a name into an address
+
+DNS, the Domain Name System, maps human-friendly names to network information. The browser cannot connect to `shop.example.com` as plain text. It needs an IP address, or enough DNS information to discover where to connect.
+
+A simplified DNS lookup looks like this:
+
+```text
+Browser asks: Where is shop.example.com?
+Resolver checks cache.
+If needed, resolver follows DNS delegation.
+Authoritative DNS returns records.
+Browser receives an address or service target.
+```
+
+The browser usually asks a resolver configured by the operating system, network, browser, or DNS provider. That resolver may already have a cached answer. If not, it follows the DNS hierarchy until it reaches authoritative name servers for the domain.
+
+Common DNS records include:
+
+<table>
+  <thead>
+    <tr>
+      <th>Record</th>
+      <th>Purpose</th>
+      <th>Example use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>A</code></td>
+      <td>Maps a name to an IPv4 address</td>
+      <td><code>203.0.113.10</code></td>
+    </tr>
+    <tr>
+      <td><code>AAAA</code></td>
+      <td>Maps a name to an IPv6 address</td>
+      <td><code>2001:db8::10</code></td>
+    </tr>
+    <tr>
+      <td><code>CNAME</code></td>
+      <td>Points one name to another name</td>
+      <td><code>shop.example.com</code> to a CDN hostname</td>
+    </tr>
+    <tr>
+      <td><code>NS</code></td>
+      <td>Identifies authoritative name servers</td>
+      <td>Delegates a zone</td>
+    </tr>
+  </tbody>
+</table>
+
+DNS answers have a time to live, usually called TTL. A TTL tells resolvers how long they may cache the answer. This is why DNS changes can appear immediately for one user and later for another.
+
+DNS does not fetch the web page. It only helps the client find the next network destination.
+
+## Layer 2: the CDN or edge network may answer nearby
+
+Many production sites point DNS to a CDN or edge network. A CDN is a distributed network of servers placed closer to users. The edge server may serve cached content, terminate TLS, apply security rules, or forward the request to the origin server.
+
+For static assets, the CDN often answers directly:
+
+```text
+GET /logo.png
+CDN cache hit
+Response returned from edge
+```
+
+For dynamic pages or APIs, the CDN may need to forward the request:
+
+```text
+GET /products/42
+CDN cache miss or dynamic route
+Request forwarded to origin
+```
+
+The important word is **may**. A CDN is not only "for images." Depending on configuration, it can cache HTML, API responses, JavaScript, CSS, images, videos, or nothing at all.
+
+Response headers often reveal what happened:
+
+```text
+cache-control: public, max-age=3600
+age: 120
+cf-cache-status: HIT
+x-cache: Miss from cloudfront
+```
+
+Names differ by provider, but the debugging idea is the same. A cache hit means the edge answered from stored content. A cache miss means the request moved deeper.
+
+The CDN layer can fail because of wrong DNS records, invalid TLS certificates, blocked security rules, stale cache, origin timeout, or a bad origin address.
+
+## Layer 3: load balancer or reverse proxy chooses an upstream
+
+After the edge, the request often reaches a load balancer or reverse proxy.
+
+A load balancer distributes traffic across multiple healthy app instances:
+
+```text
+Request
+  -> load balancer
+  -> app instance A, B, or C
+```
+
+A reverse proxy receives public traffic and forwards it to an internal service:
+
+```nginx
+location /api/ {
+  proxy_pass http://api-service:3000/;
+}
+```
+
+In many deployments, one component does both jobs. It terminates TLS, checks health, applies routing rules, and forwards traffic to an upstream app.
+
+This layer answers questions like:
+
+- Should `/api/*` go to the API service?
+- Should `/images/*` go to object storage?
+- Which app instance is healthy?
+- Did the upstream app respond before the timeout?
+- Should the request keep its original `Host` header?
+
+This is also the layer where many `502 Bad Gateway` and `504 Gateway Timeout` errors appear. A `502` often means the proxy could not get a valid response from the upstream app. A `504` usually points toward a timeout while waiting for the upstream.
+
+The proxy is not your business logic, but its configuration can break your application. A wrong upstream port, wrong container name, failed health check, or too-short timeout can make correct application code unreachable.
+
+## Layer 4: the deployed app process handles the route
+
+If the request reaches your app, the application framework takes over. For our example:
+
+```text
+GET /products/42
+```
+
+The app needs to route that path to the correct handler.
+
+```ts
+app.get("/products/:id", async (req, res) => {
+  const product = await loadProduct(req.params.id);
+
+  if (!product) {
+    res.status(404).json({ error: "Product not found" });
+    return;
+  }
+
+  res.json(product);
+});
+```
+
+This layer handles validation, authentication, authorization, business logic, response formatting, and error handling.
+
+Application failures look different from proxy failures. If the app catches an error and returns JSON, the request reached your code:
+
+```json
+{ "error": "Product not found" }
+```
+
+If the browser shows a generic platform error page, the request may have failed before your handler completed.
+
+The app process can fail because of:
+
+- missing environment variables
+- wrong startup command
+- wrong port binding
+- runtime exceptions
+- memory limits
+- slow route logic
+- invalid deployment build output
+
+Locally, you often run one app process with local configuration. In production, the process runs behind routing infrastructure with different secrets, ports, file paths, operating system behavior, and resource limits.
+
+## Layer 5: downstream services provide the data
+
+Most useful apps do not answer from code alone. The product page may require:
+
+```text
+database: product details and price
+cache: frequently requested product summary
+object storage: product images
+search service: related products
+payment API: regional availability or pricing rule
+```
+
+Each downstream call adds another possible delay or failure.
+
+A typical route may behave like this:
+
+```ts
+async function loadProduct(id: string) {
+  const cached = await cache.get(`product:${id}`);
+
+  if (cached) {
+    return JSON.parse(cached);
+  }
+
+  const product = await db.product.findUnique({ where: { id } });
+
+  if (product) {
+    await cache.set(`product:${id}`, JSON.stringify(product), { ttl: 300 });
+  }
+
+  return product;
+}
+```
+
+This handler depends on both cache and database behavior. If the cache is down, should the route fail or continue to the database? If the database is slow, should the app wait, timeout, or return a fallback? These are design decisions, not just networking details.
+
+Downstream failures often appear as application errors:
+
+- database connection refused
+- authentication failed
+- migration missing
+- cache timeout
+- object not found in storage
+- external API rate limit
+
+When debugging, test each dependency separately. A healthy `/health` route proves the app process is alive. It does not prove the database, cache, storage, or external APIs are reachable.
+
+## The full request path in one view
+
+Here is the complete simplified chain:
+
+```text
+1. Browser parses the URL.
+2. DNS resolves shop.example.com.
+3. Browser opens a connection and negotiates HTTPS.
+4. CDN or edge checks cache and rules.
+5. Edge forwards to origin if it cannot answer directly.
+6. Load balancer or reverse proxy picks an upstream app.
+7. App process matches the route and runs code.
+8. App calls database, cache, storage, or another API.
+9. App builds the response.
+10. Response travels back through proxy, edge, and browser.
+```
+
+The response path matters too. A CDN may store the response based on caching headers. A proxy may compress it. The browser may cache it locally.
+
+## How to debug by layer
+
+When something breaks, ask which layer can still be proven healthy.
+
+<table>
+  <thead>
+    <tr>
+      <th>Symptom</th>
+      <th>Likely layer</th>
+      <th>First check</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Domain does not resolve</td>
+      <td>DNS</td>
+      <td><code>nslookup</code> or <code>dig</code></td>
+    </tr>
+    <tr>
+      <td>Old content appears</td>
+      <td>CDN or browser cache</td>
+      <td>Cache headers and purge rules</td>
+    </tr>
+    <tr>
+      <td>Generic 502 page</td>
+      <td>Proxy to app boundary</td>
+      <td>App logs, upstream port, health checks</td>
+    </tr>
+    <tr>
+      <td>JSON error from your API</td>
+      <td>Application route</td>
+      <td>Handler logs and error path</td>
+    </tr>
+    <tr>
+      <td>Only data-heavy pages fail</td>
+      <td>Database or downstream service</td>
+      <td>Dependency logs and query timing</td>
+    </tr>
+  </tbody>
+</table>
+
+Useful commands:
+
+```bash
+nslookup shop.example.com
+curl -I https://shop.example.com/products/42
+curl -v https://shop.example.com/products/42
+```
+
+Use headers to identify the layer. Use logs to confirm whether the request reached your app. Use dependency checks to confirm whether the app can reach the services it needs.
+
+<ArticleQuiz
+  question="A user gets a generic 502 page, but your application logs show no request for that URL. Which layer should you check first?"
+  options={["The database query", "The browser CSS parser", "The proxy or load balancer routing to the app", "The JSON response shape"]}
+  answer="The proxy or load balancer routing to the app"
+/>
+
+## Common misconceptions
+
+**DNS sends the HTTP request:** DNS only helps find where to connect. The HTTP request happens after the client has an address and connection.
+
+**A CDN always means cached content:** A CDN can forward dynamic requests to origin. Whether it caches depends on configuration and response headers.
+
+**The load balancer runs business logic:** It usually routes, checks health, and balances traffic. Your app still owns product lookup, authentication, and response data.
+
+**A healthy app means a healthy system:** The app process can be alive while the database is unreachable or an external API is timing out.
+
+**Every failure is a backend bug:** Some failures are DNS, TLS, CDN, proxy, deployment, or dependency problems. The layer matters.
+
+## Practical summary
+
+A web request is not a single jump from browser to code. It moves through layers, and each layer has a specific job.
+
+Remember the chain:
+
+```text
+DNS finds the destination.
+CDN or edge may answer nearby.
+Load balancer or reverse proxy forwards to a healthy upstream.
+The app process runs route logic.
+Databases, caches, storage, and APIs provide data.
+```
+
+When debugging, do not guess randomly. Start from the outside and move inward. First prove DNS works, then prove the edge can reach origin, then prove the proxy can reach the app, then prove the app can reach its dependencies.
+
+Small challenge: open any website you use often and run `curl -I` against it. Look at the headers. Try to identify whether a CDN, cache, or proxy is involved before the response reaches your browser.
+
+## Primary references
+
+- [RFC 1034: Domain names - concepts and facilities](https://www.rfc-editor.org/rfc/rfc1034)
+- [RFC 9110: HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110)
+- [RFC 9111: HTTP Caching](https://www.rfc-editor.org/rfc/rfc9111)
