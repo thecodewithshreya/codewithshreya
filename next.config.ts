@@ -5,6 +5,7 @@ const withMDX = createMDX({});
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  allowedDevOrigins: ["192.168.1.38"],
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
 };
 

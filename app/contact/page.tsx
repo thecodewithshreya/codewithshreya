@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Github, Linkedin, Mail, MessageCircle, Youtube } from "lucide-react";
-import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -10,12 +9,11 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <>
-      <PageHero
-        eyebrow="Contact"
-        title="Let's talk about learning"
-        description="Have a question, topic suggestion, or collaboration idea? Reach out through any of the channels below."
-      />
-      <section className="container-page py-16">
+      <section className="container-page py-10">
+        <div className="mx-auto mb-8 max-w-4xl">
+          <p className="eyebrow">Contact</p>
+          <h1 className="mt-2 text-3xl font-black text-white">Get in touch</h1>
+        </div>
         <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
           <div className="card p-7">
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-indigo-500/10 text-indigo-400">

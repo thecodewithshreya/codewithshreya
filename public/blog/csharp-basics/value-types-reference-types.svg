@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">Value Types vs Reference Types</title>
+  <desc id="desc">Ask what gets copied: the value itself or a reference to an object.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset="0.58" stop-color="#111827"/>
+      <stop offset="1" stop-color="#061b1f"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="520" fill="url(#bg)"/>
+  <circle cx="1060" cy="80" r="150" fill="#38bdf8" opacity="0.08"/>
+  <circle cx="120" cy="470" r="170" fill="#38bdf8" opacity="0.055"/>
+  <g filter="url(#shadow)">
+    <rect x="52" y="48" width="1096" height="424" rx="28" fill="#020617" fill-opacity="0.72" stroke="#1f2a44"/>
+    <text x="90" y="106" fill="#f8fafc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="38" font-weight="800">Value Types vs Reference Types</text>
+    <text x="90" y="144" fill="#cbd5e1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18">Ask what gets copied: the value itself or a reference to an object.</text>
+    
+    
+    <g>
+      <rect x="198.5" y="190" width="245" height="112" rx="20" fill="#0f172a" stroke="#38bdf8" stroke-opacity="0.72"/>
+      <circle cx="228.5" cy="222" r="10" fill="#38bdf8"/>
+      <text x="250.5" y="229" fill="#f8fafc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="750">int a</text>
+      <text x="228.5" y="266" fill="#cbd5e1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17">10</text>
+    </g>
+    <g>
+      <rect x="477.5" y="190" width="245" height="112" rx="20" fill="#0f172a" stroke="#38bdf8" stroke-opacity="0.72"/>
+      <circle cx="507.5" cy="222" r="10" fill="#38bdf8"/>
+      <text x="529.5" y="229" fill="#f8fafc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="750">copy</text>
+      <text x="507.5" y="266" fill="#cbd5e1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17">value</text>
+    </g>
+    <g>
+      <rect x="756.5" y="190" width="245" height="112" rx="20" fill="#0f172a" stroke="#38bdf8" stroke-opacity="0.72"/>
+      <circle cx="786.5" cy="222" r="10" fill="#38bdf8"/>
+      <text x="808.5" y="229" fill="#f8fafc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="750">int b</text>
+      <text x="786.5" y="266" fill="#cbd5e1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17">20</text>
+    </g>
+    <g>
+      <rect x="198.5" y="322" width="245" height="112" rx="20" fill="#0f172a" stroke="#38bdf8" stroke-opacity="0.72"/>
+      <circle cx="228.5" cy="354" r="10" fill="#38bdf8"/>
+      <text x="250.5" y="361" fill="#f8fafc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="750">Student first</text>
+      <text x="228.5" y="398" fill="#cbd5e1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17">reference</text>
+    </g>
+    <g>
+      <rect x="477.5" y="322" width="245" height="112" rx="20" fill="#0f172a" stroke="#38bdf8" stroke-opacity="0.72"/>
+      <circle cx="507.5" cy="354" r="10" fill="#38bdf8"/>
+      <text x="529.5" y="361" fill="#f8fafc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="750">same object</text>
+      <text x="507.5" y="398" fill="#cbd5e1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17">Name = Aman</text>
+    </g>
+    <g>
+      <rect x="756.5" y="322" width="245" height="112" rx="20" fill="#0f172a" stroke="#38bdf8" stroke-opacity="0.72"/>
+      <circle cx="786.5" cy="354" r="10" fill="#38bdf8"/>
+      <text x="808.5" y="361" fill="#f8fafc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="750">Student second</text>
+      <text x="786.5" y="398" fill="#cbd5e1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17">reference</text>
+    </g>
+    <rect x="90" y="448" width="1020" height="44" rx="16" fill="#0b1220" stroke="#24324c"/>
+    <text x="116" y="477" fill="#38bdf8" font-family="Consolas, Menlo, monospace" font-size="21">int b = a;  // separate value</text>
+  </g>
+</svg>

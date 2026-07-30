@@ -9,6 +9,7 @@ const productLinks = [
   ["Video Lessons", "/videos"],
   ["Online Compiler", "/compiler"],
   ["Practice Quizzes", "/quizzes"],
+  ["Developer Tools", "/tools"],
 ];
 
 const companyLinks = [

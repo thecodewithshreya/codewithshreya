@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { BookOpen, Code2, Heart, Lightbulb, Target, Users } from "lucide-react";
-import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
   title: "About",
@@ -16,12 +15,7 @@ const values = [
 export default function AboutPage() {
   return (
     <>
-      <PageHero
-        eyebrow="About CodeWithShreya"
-        title="Computer science, taught with clarity"
-        description="A learning platform built to help students move from memorizing definitions to truly understanding how technology works."
-      />
-      <section className="container-page py-16">
+      <section className="container-page py-10">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
             <p className="eyebrow">Our mission</p>

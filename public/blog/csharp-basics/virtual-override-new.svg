@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">virtual, override, and new</title>
+  <desc id="desc">override replaces polymorphic behavior. new hides an inherited member.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset="0.58" stop-color="#111827"/>
+      <stop offset="1" stop-color="#061b1f"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="520" fill="url(#bg)"/>
+  <circle cx="1060" cy="80" r="150" fill="#818cf8" opacity="0.08"/>
+  <circle cx="120" cy="470" r="170" fill="#818cf8" opacity="0.055"/>
+  <g filter="url(#shadow)">
+    <rect x="52" y="48" width="1096" height="424" rx="28" fill="#020617" fill-opacity="0.72" stroke="#1f2a44"/>
+    <text x="90" y="106" fill="#f8fafc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="38" font-weight="800">virtual, override, and new</text>
+    <text x="90" y="144" fill="#cbd5e1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18">override replaces polymorphic behavior. new hides an inherited member.</text>
+    <path d="M400 276 H444" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/><path d="M750 276 H794" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+    
+    <g>
+      <rect x="100" y="220" width="300" height="112" rx="20" fill="#0f172a" stroke="#818cf8" stroke-opacity="0.72"/>
+      <circle cx="130" cy="252" r="10" fill="#818cf8"/>
+      <text x="152" y="259" fill="#f8fafc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="750">virtual</text>
+      <text x="130" y="296" fill="#cbd5e1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17">can be overridden</text>
+    </g>
+    <g>
+      <rect x="450" y="220" width="300" height="112" rx="20" fill="#0f172a" stroke="#818cf8" stroke-opacity="0.72"/>
+      <circle cx="480" cy="252" r="10" fill="#818cf8"/>
+      <text x="502" y="259" fill="#f8fafc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="750">override</text>
+      <text x="480" y="296" fill="#cbd5e1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17">polymorphic replacement</text>
+    </g>
+    <g>
+      <rect x="800" y="220" width="300" height="112" rx="20" fill="#0f172a" stroke="#818cf8" stroke-opacity="0.72"/>
+      <circle cx="830" cy="252" r="10" fill="#818cf8"/>
+      <text x="852" y="259" fill="#f8fafc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="750">new</text>
+      <text x="830" y="296" fill="#cbd5e1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17">member hiding</text>
+    </g>
+    <rect x="90" y="448" width="1020" height="44" rx="16" fill="#0b1220" stroke="#24324c"/>
+    <text x="116" y="477" fill="#818cf8" font-family="Consolas, Menlo, monospace" font-size="21">public virtual string Title()</text>
+  </g>
+</svg>

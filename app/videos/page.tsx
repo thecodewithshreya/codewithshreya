@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { VideoCard } from "@/components/content-cards";
-import { PageHero } from "@/components/page-hero";
 import { StaggerReveal } from "@/components/motion/reveal";
 import { videos } from "@/lib/data";
 
@@ -12,24 +11,24 @@ export const metadata: Metadata = {
 export default function VideosPage() {
   return (
     <>
-      <PageHero
-        eyebrow="Video library"
-        title="Learn visually, understand deeply"
-        description="Focused lessons and concept walkthroughs to help you learn faster and retain more."
-      />
-      <section className="container-page py-16">
+      <section className="container-page py-10">
+        <div className="mb-8">
+          <p className="eyebrow">Video library</p>
+          <h1 className="mt-2 text-3xl font-black text-white">Visual lessons</h1>
+        </div>
         <div className="mb-8 flex flex-wrap gap-2">
-          {["All videos", "DSA", "Core CS", "Programming", "GATE"].map((filter, index) => (
+          {["All videos", "Algorithms", "Core CS", ".NET", "System Design"].map((filter, index) => (
             <span
               key={filter}
-              className={`rounded-full px-4 py-2 text-sm ${
-                index === 0 ? "bg-indigo-600 text-white" : "border border-line text-gray-400"
+              className={`rounded-lg px-4 py-2 text-sm ${
+                index === 0
+                  ? "bg-amber-500 text-gray-950"
+                  : "border border-line bg-white/[0.025] text-gray-400"
               }`}
             >
               {filter}
             </span>
           ))}
-          <span className="self-center px-2 text-xs text-gray-500">Filters coming soon</span>
         </div>
         <StaggerReveal className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {videos.map((video) => <VideoCard key={video.title} video={video} />)}

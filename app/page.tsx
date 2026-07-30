@@ -1,30 +1,105 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  BrainCircuit,
-  CheckCircle2,
+  Binary,
+  BookOpenText,
+  Braces,
+  Calculator,
   Code2,
-  Database,
+  FileCode2,
+  FileQuestion,
   FileText,
   GraduationCap,
   Layers3,
-  MonitorPlay,
-  Network,
-  Sparkles,
+  PlayCircle,
+  Search,
   TerminalSquare,
 } from "lucide-react";
-import { ArticleCard, QuizCard, VideoCard } from "@/components/content-cards";
-import { Reveal, StaggerReveal } from "@/components/motion/reveal";
+import { ArticleCard, QuizCard, ToolCard, VideoCard } from "@/components/content-cards";
+import { HomeScrollRow } from "@/components/home-scroll-row";
+import { Reveal } from "@/components/motion/reveal";
 import { SectionHeading } from "@/components/section-heading";
 import { articles, quizzes, videos } from "@/lib/data";
+import type { ReactNode } from "react";
 
-const categories = [
-  { name: "Data Structures", lessons: "32 lessons", icon: Layers3, color: "text-blue-400 bg-blue-500/10" },
-  { name: "Algorithms", lessons: "28 lessons", icon: BrainCircuit, color: "text-purple-400 bg-purple-500/10" },
-  { name: "DBMS", lessons: "21 lessons", icon: Database, color: "text-cyan-400 bg-cyan-500/10" },
-  { name: "Operating Systems", lessons: "24 lessons", icon: MonitorPlay, color: "text-pink-400 bg-pink-500/10" },
-  { name: "Computer Networks", lessons: "19 lessons", icon: Network, color: "text-emerald-400 bg-emerald-500/10" },
-  { name: "Programming", lessons: "40+ lessons", icon: Code2, color: "text-orange-400 bg-orange-500/10" },
+const tools = [
+  {
+    title: "JSON Formatter",
+    description: "Validate and format JSON with readable indentation and quick error checks.",
+    icon: FileCode2,
+    href: "/tools#json",
+    accent: "border-blue-500/20 hover:border-blue-400/60",
+  },
+  {
+    title: "Code Formatter",
+    description: "Beautify snippets and keep your examples consistent before sharing.",
+    icon: Braces,
+    href: "/tools#code",
+    accent: "border-emerald-500/20 hover:border-emerald-400/60",
+  },
+  {
+    title: "Number Converter",
+    description: "Convert decimal, binary, hexadecimal, and octal values instantly.",
+    icon: Binary,
+    href: "/tools#number",
+    accent: "border-violet-500/20 hover:border-violet-400/60",
+  },
+  {
+    title: "Base Calculator",
+    description: "Practice base arithmetic for digital logic and computer architecture.",
+    icon: Calculator,
+    href: "/tools#base",
+    accent: "border-cyan-500/30 hover:border-cyan-400/70",
+  },
+];
+
+const paths = [
+  { title: "Learn", text: "Read one concept with examples", icon: BookOpenText },
+  { title: "Watch", text: "Use video for the first mental model", icon: PlayCircle },
+  { title: "Practice", text: "Test recall with focused quizzes", icon: FileQuestion },
+  { title: "Build", text: "Run code and apply the idea", icon: TerminalSquare },
+];
+
+const learningPaths = [
+  {
+    title: "Core CS",
+    text: "DSA, OS, DBMS, CN, and algorithms",
+    icon: Layers3,
+    href: "/blog",
+  },
+  {
+    title: "Exam Prep",
+    text: "PYQs, topic filters, and timed practice",
+    icon: GraduationCap,
+    href: "/pyq",
+  },
+  {
+    title: "Developer Tools",
+    text: "Format, convert, compare, and test",
+    icon: Braces,
+    href: "/tools",
+  },
+];
+
+const dotNetPaths = [
+  {
+    title: "C# Basics",
+    text: "Types, strings, records, methods, and OOP basics",
+    icon: Code2,
+    href: "/blog/csharp-basics-for-dotnet-interviews",
+  },
+  {
+    title: ".NET Roadmap",
+    text: "C#, ASP.NET Core, SQL, EF Core, testing, and deployment",
+    icon: GraduationCap,
+    href: "/blog/how-to-become-dotnet-developer-roadmap",
+  },
+  {
+    title: "Localization",
+    text: "Culture, resource files, translated UI, dates, and prices",
+    icon: FileText,
+    href: "/blog/dotnet-localization-globalization",
+  },
 ];
 
 const organizationJsonLd = {
@@ -44,220 +119,197 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
-      <section className="hero-grid relative overflow-hidden">
-        <div className="animate-ambient pointer-events-none absolute left-1/2 top-0 h-[35rem] w-[35rem] -translate-x-1/2 rounded-full bg-indigo-600/10 blur-3xl" />
-        <div className="container-page relative grid items-center gap-14 py-20 lg:grid-cols-[1.08fr_.92fr] lg:py-28">
+
+      <section className="premium-hero relative overflow-hidden border-b border-line">
+        <div className="premium-hero-glow absolute inset-0" />
+        <div className="container-page relative grid min-h-[360px] items-center gap-6 py-8 lg:min-h-[390px] lg:grid-cols-[0.95fr_1.05fr]">
           <Reveal direction="right">
-            <span className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-300">
-              <Sparkles size={14} /> Your complete CS learning companion
-            </span>
-            <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
-              Master computer science,{" "}
-              <span className="gradient-text">one concept at a time.</span>
+            <h1 className="max-w-2xl text-4xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Learn Computer Science{" "}
+              <span className="text-violet-300">in One Place.</span>
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-400">
-              Structured lessons, practical coding, focused quizzes, and exam
-              resources—everything you need to build strong CS fundamentals.
+            <p className="mt-4 max-w-xl text-base leading-7 text-gray-300">
+              Blogs, videos, quizzes, PYQs, compiler practice, and developer tools for focused learning.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <Link href="/blog" className="button-primary">
                 Start learning <ArrowRight size={17} />
               </Link>
-              <Link href="/compiler" className="button-secondary">
-                <Code2 size={17} /> Try online compiler
+              <Link href="/tools" className="button-secondary">
+                Explore tools <Code2 size={17} />
               </Link>
             </div>
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-gray-400">
-              {["Beginner friendly", "Exam focused", "Always free"].map((label) => (
-                <span key={label} className="flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-indigo-400" /> {label}
-                </span>
-              ))}
-            </div>
           </Reveal>
 
-          <Reveal
-            direction="left"
-            delay={0.14}
-            className="relative mx-auto w-full max-w-xl"
-          >
-            <div className="absolute -inset-5 rounded-3xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 blur-2xl" />
-            <div className="animate-float-slow card relative overflow-hidden shadow-2xl">
-              <div className="flex items-center gap-2 border-b border-line px-4 py-3">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                <span className="ml-3 text-xs text-gray-500">learning_path.py</span>
-              </div>
-              <pre className="overflow-x-auto p-6 text-sm leading-7 text-gray-300 sm:p-8">
-                <code>
-                  <span className="text-purple-400">class</span>{" "}
-                  <span className="text-blue-400">LearningPath</span>:{"\n"}
-                  {"    "}<span className="text-purple-400">def</span>{" "}
-                  <span className="text-cyan-300">__init__</span>(self):{"\n"}
-                  {"        "}self.foundation = <span className="text-amber-300">&quot;strong&quot;</span>{"\n"}
-                  {"        "}self.practice = <span className="text-amber-300">True</span>{"\n\n"}
-                  {"    "}<span className="text-purple-400">def</span>{" "}
-                  <span className="text-cyan-300">grow</span>(self):{"\n"}
-                  {"        "}<span className="text-purple-400">return</span>{" "}
-                  <span className="text-amber-300">&quot;Learn → Code → Grow&quot;</span>
-                </code>
-              </pre>
-              <div className="grid grid-cols-3 border-t border-line">
-                {[
-                  ["100+", "Lessons"],
-                  ["50+", "Quizzes"],
-                  ["1", "Compiler"],
-                ].map(([value, label]) => (
-                  <div key={label} className="border-r border-line p-4 text-center last:border-0">
-                    <div className="font-bold text-indigo-300">{value}</div>
-                    <div className="mt-1 text-xs text-gray-500">{label}</div>
+          <Reveal direction="left" delay={0.12}>
+            <div className="cs-3d-scene relative mx-auto hidden h-[300px] w-full max-w-md lg:block" aria-hidden="true">
+              <div className="scene-orbit scene-orbit-one" />
+              <div className="scene-orbit scene-orbit-two" />
+              <div className="floating-cube cube-one">C#</div>
+              <div className="floating-cube cube-two">SQL</div>
+              <div className="floating-cube cube-three">API</div>
+              <div className="scene-laptop">
+                <div className="scene-screen">
+                  <div className="flex items-center gap-2 border-b border-line pb-4">
+                    <span className="h-3 w-3 rounded-full bg-rose-400" />
+                    <span className="h-3 w-3 rounded-full bg-amber-400" />
+                    <span className="h-3 w-3 rounded-full bg-emerald-400" />
+                    <span className="ml-3 text-xs text-gray-500">codewithshreya.academy</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="border-y border-line bg-white/[0.015] py-20">
-        <div className="container-page">
-          <SectionHeading
-            eyebrow="Explore topics"
-            title="Build your computer science foundation"
-            description="Clear, structured resources across the subjects that matter most."
-            centered
-          />
-          <StaggerReveal className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((category) => (
-              <div key={category.name} className="card h-full flex items-center gap-4 p-5">
-                <span className={`grid h-12 w-12 place-items-center rounded-xl ${category.color}`}>
-                  <category.icon size={23} />
-                </span>
-                <div>
-                  <h3 className="font-semibold">{category.name}</h3>
-                  <p className="mt-1 text-sm text-gray-500">{category.lessons}</p>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  {paths.map(({ title, text, icon: Icon }) => (
+                    <div key={title} className="scene-tile">
+                      <span className="grid h-11 w-11 place-items-center rounded-lg bg-violet-500/10 text-violet-300">
+                        <Icon size={22} />
+                      </span>
+                      <h2 className="mt-5 text-xl font-bold text-white">{title}</h2>
+                      <p className="mt-2 text-sm leading-6 text-gray-400">{text}</p>
+                    </div>
+                  ))}
+                  </div>
+                  <div className="mt-5 rounded-lg border border-white/10 bg-black/35 p-5">
+                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                      <Search size={16} /> Search a topic
+                    </div>
+                    <p className="mt-3 text-lg font-bold text-white">C# basics, SQL joins, time complexity...</p>
+                  </div>
                 </div>
-                <span className="ml-auto text-xs text-gray-500">Coming soon</span>
+                <div className="scene-base">
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </div>
               </div>
-            ))}
-          </StaggerReveal>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      <PreviewSection
-        id="articles"
-        eyebrow="Latest articles"
-        title="Learn with in-depth explanations"
-        description="Practical guides that make complex computer science concepts easier to understand."
-        href="/blog"
-        linkLabel="View all articles"
-      >
-        {articles.slice(0, 3).map((article) => <ArticleCard key={article.title} article={article} />)}
-      </PreviewSection>
-
-      <section className="border-y border-line bg-white/[0.015] py-20">
+      <section className="learning-path-section py-14">
         <div className="container-page">
-          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-            <SectionHeading
-              eyebrow="Video lessons"
-              title="Watch. Understand. Apply."
-              description="Concise video lessons designed to turn difficult concepts into useful mental models."
-            />
-            <Link href="/videos" className="button-secondary shrink-0">
-              Browse videos <ArrowRight size={16} />
-            </Link>
-          </div>
-          <StaggerReveal className="mt-10 grid gap-5 md:grid-cols-3">
-            {videos.slice(0, 3).map((video) => <VideoCard key={video.title} video={video} />)}
-          </StaggerReveal>
-        </div>
-      </section>
-
-      <section className="py-20">
-        <div className="container-page grid items-center gap-12 lg:grid-cols-2">
-          <Reveal direction="right">
-            <p className="eyebrow">Online compiler</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              Practice Python without leaving your browser
-            </h2>
-            <p className="mt-4 max-w-xl leading-7 text-gray-400">
-              Write and test Python snippets with a clean, distraction-free editor.
-            </p>
-            <div className="mt-6 grid grid-cols-2 gap-3 text-sm text-gray-300">
-              {[
-                "Python demo",
-                "Custom input",
-                "Instant feedback",
-                "No setup needed",
-              ].map((label) => (
-                <span key={label} className="flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-indigo-400" /> {label}
+          <div className="learning-path-shell">
+            <div className="learning-dots learning-dots-left" />
+            <div className="learning-dots learning-dots-right" />
+            <div className="text-center">
+              <span className="learning-pill">Learning paths</span>
+              <h2 className="mt-4 text-3xl font-black tracking-tight text-white sm:text-4xl">
+                Choose what you want to improve
+              </h2>
+              <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-gray-400">
+                Move between explanations, practice, code, and previous-year questions without losing context.
+              </p>
+            </div>
+            <HomeScrollRow className="mt-9">
+            {learningPaths.map(({ title, text, icon: Icon, href }) => (
+              <Link key={title} href={href} className="learning-path-card group">
+                <span className="learning-path-icon">
+                  <Icon size={30} />
                 </span>
-              ))}
-            </div>
-            <Link href="/compiler" className="button-primary mt-8">
-              Open compiler <TerminalSquare size={17} />
-            </Link>
-          </Reveal>
-          <Reveal direction="left" delay={0.1} className="card overflow-hidden">
-            <div className="flex items-center justify-between border-b border-line px-4 py-3">
-              <span className="text-xs text-gray-400">main.py</span>
-              <span className="rounded bg-blue-500/10 px-2 py-1 text-xs text-blue-300">Python</span>
-            </div>
-            <pre className="min-h-52 overflow-x-auto p-6 text-sm leading-7">
-              <code>
-                <span className="text-purple-400">def</span>{" "}
-                <span className="text-blue-400">greet</span>(name):{"\n"}
-                {"    "}<span className="text-purple-400">return</span>{" "}
-                <span className="text-amber-300">f&quot;Keep coding, {"{"}name{"}"}!&quot;</span>{"\n\n"}
-                <span className="text-gray-500"># Start your journey</span>{"\n"}
-                print(greet(<span className="text-amber-300">&quot;Shreya&quot;</span>))
-              </code>
-            </pre>
-            <div className="border-t border-line bg-black/20 p-4">
-              <span className="text-xs uppercase tracking-widest text-gray-600">Output</span>
-              <p className="mt-2 font-mono text-sm text-emerald-400">Keep coding, Shreya!</p>
-            </div>
-          </Reveal>
+                <h3 className="mt-5 text-xl font-extrabold text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-gray-400">{text}</p>
+                <span className="learning-path-action">
+                  Open path <ArrowRight size={15} />
+                </span>
+              </Link>
+            ))}
+            </HomeScrollRow>
+          </div>
         </div>
       </section>
+
+      <section className="dotnet-section py-14">
+        <div className="container-page">
+          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+            <SectionHeading
+              eyebrow=".NET"
+              title="Build strong .NET fundamentals"
+              description="Start with C#, understand the .NET platform, then move into ASP.NET Core and real application skills."
+            />
+            <Link href="/blog/csharp-basics-for-dotnet-interviews" className="button-secondary shrink-0">
+              Start .NET <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {dotNetPaths.map(({ title, text, icon: Icon, href }) => (
+              <Link key={title} href={href} className="dotnet-card group">
+                <span className="dotnet-icon">
+                  <Icon size={24} />
+                </span>
+                <h3 className="mt-5 text-xl font-extrabold text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-gray-400">{text}</p>
+                <span className="dotnet-action">
+                  Open lesson <ArrowRight size={15} />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <Preview
+        eyebrow="Latest blogs"
+        title="Read deep explanations"
+        href="/blog"
+        label="View all blogs"
+      >
+        {articles.slice(0, 3).map((article) => (
+          <ArticleCard key={article.title} article={article} />
+        ))}
+      </Preview>
+
+      <Preview eyebrow="Videos" title="Watch visual lessons" href="/videos" label="Browse videos">
+        {videos.map((video) => (
+          <VideoCard key={video.title} video={video} />
+        ))}
+      </Preview>
+
+      <Preview eyebrow="Quizzes" title="Practice with topic cards" href="/quizzes" label="Start practice">
+        {quizzes.map((quiz) => (
+          <QuizCard key={quiz.title} quiz={quiz} />
+        ))}
+      </Preview>
 
       <section className="border-y border-line bg-white/[0.015] py-20">
         <div className="container-page">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <SectionHeading
-              eyebrow="Test your knowledge"
-              title="Practice with focused quizzes"
-              description="Get immediate feedback and identify the concepts you need to revisit."
+              eyebrow="Tools"
+              title="Small utilities for students and developers"
+              description="Useful tools for formatting, conversion, debugging, and CS practice."
             />
-            <Link href="/quizzes" className="button-secondary shrink-0">All quizzes <ArrowRight size={16} /></Link>
+            <Link href="/tools" className="button-secondary shrink-0">
+              Open tools <ArrowRight size={16} />
+            </Link>
           </div>
-          <StaggerReveal className="mt-10 grid gap-5 md:grid-cols-3">
-            {quizzes.slice(0, 3).map((quiz) => <QuizCard key={quiz.title} quiz={quiz} />)}
-          </StaggerReveal>
+          <HomeScrollRow className="mt-10">
+            {tools.map((tool) => (
+              <ToolCard key={tool.title} tool={tool} />
+            ))}
+          </HomeScrollRow>
         </div>
       </section>
 
       <section className="py-20">
         <div className="container-page">
-          <Reveal className="card relative overflow-hidden bg-gradient-to-br from-indigo-600/20 via-panel to-purple-600/10 p-8 sm:p-12">
-            <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-purple-600/10 blur-3xl" />
+          <Reveal className="card relative overflow-hidden border-violet-500/20 bg-gradient-to-br from-violet-500/15 via-panel to-indigo-500/10 p-8 sm:p-12">
             <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_auto]">
               <div>
                 <div className="flex items-center gap-3">
-                  <span className="grid h-12 w-12 place-items-center rounded-xl bg-indigo-500/15 text-indigo-300">
-                    <GraduationCap size={25} />
+                  <span className="grid h-12 w-12 place-items-center rounded-lg bg-violet-500/10 text-violet-300">
+                    <FileText size={25} />
                   </span>
-                  <span className="eyebrow">Previous year questions</span>
+                  <span className="eyebrow">PYQ practice</span>
                 </div>
-                <h2 className="mt-5 text-3xl font-bold">Prepare smarter with real exam questions</h2>
+                <h2 className="mt-5 text-3xl font-bold text-white">Practice real exam questions by subject and year</h2>
                 <p className="mt-4 max-w-2xl leading-7 text-gray-400">
-                  Explore GATE questions, college-wise papers, and exam-style PYQ quizzes in one place.
+                  Use PYQ cards for GATE, university papers, solved counts, and quick revision sessions.
                 </p>
               </div>
               <Link href="/pyq" className="button-primary">
-                Explore PYQs <FileText size={17} />
+                Explore PYQs <ArrowRight size={17} />
               </Link>
             </div>
           </Reveal>
@@ -267,32 +319,31 @@ export default function Home() {
   );
 }
 
-function PreviewSection({
+function Preview({
   eyebrow,
   title,
-  description,
   href,
-  linkLabel,
+  label,
   children,
 }: {
-  id?: string;
-  eyebrow: React.ReactNode;
-  title: React.ReactNode;
-  description: React.ReactNode;
+  eyebrow: string;
+  title: string;
   href: string;
-  linkLabel: React.ReactNode;
-  children: React.ReactNode;
+  label: string;
+  children: ReactNode;
 }) {
   return (
     <section className="py-20">
       <div className="container-page">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <SectionHeading eyebrow={eyebrow} title={title} description={description} />
-          <Link href={href} className="button-secondary shrink-0">{linkLabel} <ArrowRight size={16} /></Link>
+          <SectionHeading eyebrow={eyebrow} title={title} />
+          <Link href={href} className="button-secondary shrink-0">
+            {label} <ArrowRight size={16} />
+          </Link>
         </div>
-        <StaggerReveal className="mt-10 grid gap-5 md:grid-cols-3">
+        <HomeScrollRow className="mt-10">
           {children}
-        </StaggerReveal>
+        </HomeScrollRow>
       </div>
     </section>
   );

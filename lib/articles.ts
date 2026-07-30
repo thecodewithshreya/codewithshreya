@@ -5,6 +5,10 @@ const articleLoaders = {
     import("@/content/blog/sql-joins-without-confusion.mdx"),
   "dotnet-localization-globalization": () =>
     import("@/content/blog/dotnet-localization-globalization.mdx"),
+  "csharp-basics-for-dotnet-interviews": () =>
+    import("@/content/blog/csharp-basics-for-dotnet-interviews.mdx"),
+  "how-to-become-dotnet-developer-roadmap": () =>
+    import("@/content/blog/how-to-become-dotnet-developer-roadmap.mdx"),
   "debug-api-502-after-deployment": () =>
     import("@/content/blog/debug-api-502-after-deployment.mdx"),
   "what-happens-when-you-enter-a-url": () =>
