@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Script from "next/script";
 import {
   ArrowRight,
   Binary,
@@ -65,7 +66,7 @@ const learningPaths = [
     title: "Core CS",
     text: "DSA, OS, DBMS, CN, and algorithms",
     icon: Layers3,
-    href: "/blog",
+    href: "/videos#core-cs",
   },
   {
     title: "Exam Prep",
@@ -115,7 +116,8 @@ const organizationJsonLd = {
 export default function Home() {
   return (
     <>
-      <script
+      <Script
+        id="organization-json-ld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
@@ -261,7 +263,7 @@ export default function Home() {
       </Preview>
 
       <Preview eyebrow="Videos" title="Watch visual lessons" href="/videos" label="Browse videos">
-        {videos.map((video) => (
+        {videos.slice(0, 3).map((video) => (
           <VideoCard key={video.title} video={video} />
         ))}
       </Preview>

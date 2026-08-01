@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -24,16 +24,18 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 px-3 py-3">
       <nav className="site-navbar container-page flex h-16 items-center justify-between rounded-full border border-line/80 shadow-2xl shadow-black/10 backdrop-blur-xl">
-        <Link href="/" aria-label="CodeWithShreya home" className="flex items-center gap-3">
-          <Image
-            src="/codewithshreya-logo-final.png"
-            alt=""
-            width={40}
-            height={40}
-            priority
-            className="h-10 w-10"
-          />
-          <span className="hidden text-xl font-bold text-white sm:inline">
+        <Link href="/" aria-label="CodeWithShreya home" className="flex min-w-fit items-center gap-3">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white shadow-sm ring-1 ring-slate-200">
+            <Image
+              src="/codewithshreya-logo-final.png"
+              alt=""
+              width={38}
+              height={38}
+              priority
+              className="h-9 w-9 object-contain"
+            />
+          </span>
+          <span className="hidden text-xl font-bold text-slate-950 dark:text-white sm:inline">
             Code with Shreya
           </span>
         </Link>
@@ -58,12 +60,6 @@ export function Navbar() {
           <span className="ml-2">
             <ThemeToggle />
           </span>
-          <Link
-            href="/blog"
-            className="ml-1 inline-flex items-center gap-2 rounded-full bg-[#6d35c5] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5b2bb0]"
-          >
-            Start learning <ArrowRight size={15} />
-          </Link>
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">

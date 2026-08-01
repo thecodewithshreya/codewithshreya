@@ -1,6 +1,8 @@
-import { ArrowRight, Clock, FileQuestion, Layers3, Play } from "lucide-react";
+import { ArrowRight, Clock, FileQuestion, Layers3 } from "lucide-react";
 import Link from "next/link";
 import type { ElementType } from "react";
+import { PyqCardActions } from "./pyq-card-actions";
+import { VideoEmbedPreview } from "./video-embed-preview";
 
 type Article = {
   category: string;
@@ -45,14 +47,25 @@ export function ArticleCard({ article }: { article: Article }) {
 type Video = {
   title: string;
   topic: string;
+  subject?: string;
   duration: string;
   color: string;
   level?: string;
   description?: string;
+  youtubeId?: string;
+  youtubePlaylistId?: string;
+  youtubePlaylistIndex?: number;
+  youtubeUrl?: string;
 };
 
 export function VideoCard({ video }: { video: Video }) {
   const level = video.level ?? (video.topic === "Core CS" ? "Intermediate" : "Beginner");
+  const playlistIndexQuery = video.youtubePlaylistIndex ? `&index=${video.youtubePlaylistIndex}` : "";
+  const embedUrl = video.youtubeId
+    ? `https://www.youtube.com/embed/${video.youtubeId}${video.youtubePlaylistId ? `?list=${video.youtubePlaylistId}${playlistIndexQuery}` : ""}`
+    : video.youtubePlaylistId
+      ? `https://www.youtube.com/embed/videoseries?list=${video.youtubePlaylistId}${playlistIndexQuery}`
+      : null;
   const levelColor =
     level === "Advanced"
       ? "border-rose-500/30 bg-rose-500/10 text-rose-300"
@@ -62,14 +75,14 @@ export function VideoCard({ video }: { video: Video }) {
 
   return (
     <article className="card group h-full overflow-hidden">
-      <div className="relative grid aspect-video place-items-center bg-[#20232c]">
-        <div className={`absolute inset-0 bg-gradient-to-br ${video.color} opacity-25 transition group-hover:opacity-40`} />
-        <span className="relative grid h-12 w-12 place-items-center rounded-full border border-amber-400/30 bg-amber-500/20 text-amber-300 shadow-xl shadow-amber-950/20 transition group-hover:scale-105">
-          <Play size={20} fill="currentColor" />
-        </span>
-        <span className="absolute bottom-3 right-3 rounded-md bg-black/75 px-2.5 py-1 text-xs font-semibold text-white">
-          {video.duration}
-        </span>
+      <div className="relative grid aspect-video place-items-center overflow-hidden bg-[#20232c]">
+        <VideoEmbedPreview
+          title={video.title}
+          youtubeId={video.youtubeId}
+          embedUrl={embedUrl}
+          color={video.color}
+          duration={video.duration}
+        />
       </div>
       <div className="p-4">
         <div className="flex items-center gap-3">
@@ -84,9 +97,20 @@ export function VideoCard({ video }: { video: Video }) {
         <p className="mt-3 text-sm leading-6 text-gray-400">
           {video.description ?? `Focused ${video.topic} lesson with visual examples and practice notes.`}
         </p>
-        <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-amber-300">
-          Watch now <ArrowRight size={15} />
-        </span>
+        {video.youtubeUrl ? (
+          <a
+            href={video.youtubeUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-amber-300"
+          >
+            Watch on YouTube <ArrowRight size={15} />
+          </a>
+        ) : (
+          <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-amber-300">
+            Watch now <ArrowRight size={15} />
+          </span>
+        )}
       </div>
     </article>
   );
@@ -178,34 +202,42 @@ export function PyqCard({
   source,
   questions,
   year,
+  viewUrl,
+  previewUrl,
+  downloadUrl,
 }: {
   title: string;
   source: string;
   questions: string;
   year: string;
+  viewUrl?: string;
+  previewUrl?: string;
+  downloadUrl?: string;
 }) {
   return (
-    <article className="card h-full p-6">
-      <div className="flex items-start justify-between">
-        <span className="grid h-14 w-14 place-items-center rounded-xl bg-indigo-500/10 text-indigo-300">
-          <Layers3 size={24} />
-        </span>
-        <span className="rounded-md bg-white/[0.06] px-3 py-1.5 text-sm font-semibold text-gray-400">
-          {year}
-        </span>
+    <article className="card h-full overflow-hidden !bg-white/90 shadow-lg shadow-indigo-950/5 dark:!bg-[#0f1422]">
+      <div className="p-4 pb-0">
+        <div className="flex items-start justify-between">
+          <span className="grid h-9 w-9 place-items-center rounded-lg bg-violet-100 text-[#5f33d7] dark:bg-violet-500/10 dark:text-violet-300">
+            <Layers3 size={18} />
+          </span>
+          <span className="text-xs font-medium text-slate-600 dark:text-gray-400">
+            {year}
+          </span>
+        </div>
+        <h3 className="mt-4 text-sm font-bold leading-snug text-slate-950 dark:text-white">
+          {title}
+        </h3>
+        <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-gray-400">
+          {source} <span className="text-slate-300 dark:text-gray-600">-</span> {questions}
+        </p>
       </div>
-      <h3 className="mt-7 text-2xl font-bold text-white">{title}</h3>
-      <p className="mt-3 text-lg text-gray-400">
-        {source} <span className="text-gray-600">-</span> {questions}
-      </p>
-      <div className="mt-8 flex gap-3">
-        <span className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-white/[0.07] px-4 py-3 font-semibold text-white">
-          View <ArrowRight size={16} />
-        </span>
-        <span className="grid h-12 w-12 place-items-center rounded-lg bg-white/[0.07] text-gray-400">
-          PDF
-        </span>
-      </div>
+      <PyqCardActions
+        title={title}
+        viewUrl={viewUrl}
+        previewUrl={previewUrl}
+        downloadUrl={downloadUrl}
+      />
     </article>
   );
 }
