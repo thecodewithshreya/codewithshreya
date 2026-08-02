@@ -13,25 +13,25 @@ const languageExamples = {
   csharp: {
     label: "C#",
     file: "Program.cs",
-    code: 'using System;\n\nvar name = Console.ReadLine();\nif (string.IsNullOrWhiteSpace(name)) name = "Learner";\nConsole.WriteLine($"Keep coding, {name}!");',
+    code: 'using System;\n\nclass Program {\n  static void Main() {\n    var name = Console.ReadLine();\n    if (string.IsNullOrWhiteSpace(name)) name = "Learner";\n    Console.WriteLine($"Keep coding, {name}!");\n  }\n}',
     output: "Keep coding, Learner!",
   },
   javascript: {
     label: "JavaScript",
     file: "main.js",
-    code: 'const name = "Learner";\nconsole.log(`Keep coding, ${name}!`);',
+    code: 'const fs = require("fs");\nconst name = fs.readFileSync(0, "utf8").trim() || "Learner";\nconsole.log(`Keep coding, ${name}!`);',
     output: "Keep coding, Learner!",
   },
   java: {
     label: "Java",
     file: "Main.java",
-    code: 'class Main {\n  public static void main(String[] args) {\n    String name = "Learner";\n    System.out.println("Keep coding, " + name + "!");\n  }\n}',
+    code: 'import java.util.Scanner;\n\nclass Main {\n  public static void main(String[] args) {\n    Scanner scanner = new Scanner(System.in);\n    String name = scanner.hasNextLine() ? scanner.nextLine().trim() : "";\n    if (name.isEmpty()) name = "Learner";\n    System.out.println("Keep coding, " + name + "!");\n  }\n}',
     output: "Keep coding, Learner!",
   },
   cpp: {
     label: "C++",
     file: "main.cpp",
-    code: '#include <iostream>\n#include <string>\nusing namespace std;\n\nint main() {\n  string name = "Learner";\n  cout << "Keep coding, " << name << "!";\n  return 0;\n}',
+    code: '#include <iostream>\n#include <string>\nusing namespace std;\n\nint main() {\n  string name;\n  getline(cin, name);\n  if (name.empty()) name = "Learner";\n  cout << "Keep coding, " << name << "!";\n  return 0;\n}',
     output: "Keep coding, Learner!",
   },
 };
@@ -40,12 +40,18 @@ type LanguageId = keyof typeof languageExamples;
 
 const initialOutput = "Run your code to see the output here.";
 const runningOutput = "Running...";
+type RunResponse = {
+  output?: string;
+  error?: string;
+  success?: boolean;
+};
 
 export function CompilerPlayground() {
   const [language, setLanguage] = useState<LanguageId>("python");
   const [code, setCode] = useState(languageExamples.python.code);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState(initialOutput);
+  const [runSucceeded, setRunSucceeded] = useState(false);
   const [running, setRunning] = useState(false);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [compilerTheme, setCompilerTheme] = useState<"dark" | "light">("dark");
@@ -57,25 +63,48 @@ export function CompilerPlayground() {
     setCode(languageExamples[value].code);
     setInput("");
     setOutput(initialOutput);
+    setRunSucceeded(false);
     setLanguageMenuOpen(false);
   }
 
-  function runCode() {
+  async function runCode() {
     setRunning(true);
     setOutput(runningOutput);
-    window.setTimeout(() => {
-      const sample = input.trim()
-        ? `Keep coding, ${input.trim()}!`
-        : activeLanguage.output;
-      setOutput(sample);
+    setRunSucceeded(false);
+
+    try {
+      const response = await fetch("/api/compiler/run", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          language,
+          code,
+          input,
+        }),
+      });
+      const result = await response.json() as RunResponse;
+
+      if (!response.ok) {
+        throw new Error(result.error || "Code execution failed.");
+      }
+
+      setOutput(result.output || "Program finished with no output.");
+      setRunSucceeded(Boolean(result.success));
+    } catch (error) {
+      setOutput(error instanceof Error ? error.message : "Code execution failed.");
+      setRunSucceeded(false);
+    } finally {
       setRunning(false);
-    }, 550);
+    }
   }
 
   function resetCode() {
     setCode(activeLanguage.code);
     setInput("");
     setOutput(initialOutput);
+    setRunSucceeded(false);
   }
 
   function downloadCode() {
@@ -217,7 +246,7 @@ export function CompilerPlayground() {
               isCompilerLight ? "border-slate-200" : "border-line"
             }`}>
               <span className={`text-xs uppercase tracking-widest ${isCompilerLight ? "text-slate-500" : "text-gray-600"}`}>Output</span>
-              {!running && output !== initialOutput && (
+              {!running && output !== initialOutput && runSucceeded && (
                 <span className="flex items-center gap-1 text-xs text-emerald-400">
                   <CheckCircle2 size={13} /> Finished
                 </span>
@@ -226,7 +255,7 @@ export function CompilerPlayground() {
             <pre className={`whitespace-pre-wrap p-4 font-mono text-sm ${
               output === initialOutput
                 ? isCompilerLight ? "text-slate-500" : "text-gray-600"
-                : "text-emerald-500"
+                : runSucceeded ? "text-emerald-500" : "text-rose-400"
             }`}>
               {output}
             </pre>
@@ -236,7 +265,7 @@ export function CompilerPlayground() {
       <div className={`border-t px-4 py-2 text-center text-xs ${
         isCompilerLight ? "border-slate-200 bg-white text-slate-500" : "border-line bg-panel text-gray-600"
       }`}>
-        Demo mode - sample output only - no code is sent to a server
+        Code runs through your configured Judge0 compiler service
       </div>
     </div>
   );

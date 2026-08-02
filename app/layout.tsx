@@ -60,7 +60,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <Script id="theme-script" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
+      <head>
+        <Script id="theme-script" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-screen antialiased">
         <Navbar />
         <main>{children}</main>
