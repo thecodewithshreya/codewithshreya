@@ -1,0 +1,395 @@
+# IP addressing explained: classful, subnetting, and CIDR
+
+You see an address like `192.168.1.20/27` in a networking question. Then another question says `192.168.1.20` is Class C. Then subnetting asks for block size, network ID, broadcast address, and usable hosts.
+
+The confusing part is not the math. The confusing part is that these terms come from different stages of IPv4 history.
+
+By the end of this guide, you will understand how IP addressing evolved from fixed classes to subnetting and finally to CIDR. You will also be able to explain why `/24`, `/26`, and `/27` create different network sizes.
+
+## The base idea: network part and host part
+
+An IPv4 address is 32 bits long. We usually write it as four decimal numbers separated by dots:
+
+```text
+192.168.1.20
+```
+
+Each number is one octet, which means 8 bits:
+
+```text
+192        168        1          20
+8 bits     8 bits     8 bits     8 bits
+```
+
+An IP address has two logical parts:
+
+```text
+Network portion       Host portion
+```
+
+The network portion identifies the network. The host portion identifies a device inside that network.
+
+For example, if the address uses a `/24` prefix, the first 24 bits belong to the network and the last 8 bits belong to hosts:
+
+```text
+192.168.1.20/24
+
+Network portion       Host portion
+192.168.1             20
+```
+
+That `/24` value is called a prefix length. It tells you how many bits are fixed for the network.
+
+This one idea is the key to all three addressing styles.
+
+## Type 1: classful addressing
+
+Classful addressing was the original IPv4 addressing scheme. Instead of choosing any network size, IPv4 addresses were divided into fixed classes.
+
+The main classes were:
+
+<table>
+  <thead>
+    <tr>
+      <th>Class</th>
+      <th>First octet range</th>
+      <th>Default mask</th>
+      <th>Normal purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Class A</td>
+      <td>1 to 126</td>
+      <td>255.0.0.0 or /8</td>
+      <td>Very large networks</td>
+    </tr>
+    <tr>
+      <td>Class B</td>
+      <td>128 to 191</td>
+      <td>255.255.0.0 or /16</td>
+      <td>Medium networks</td>
+    </tr>
+    <tr>
+      <td>Class C</td>
+      <td>192 to 223</td>
+      <td>255.255.255.0 or /24</td>
+      <td>Small networks</td>
+    </tr>
+    <tr>
+      <td>Class D</td>
+      <td>224 to 239</td>
+      <td>Not used for normal host networks</td>
+      <td>Multicast</td>
+    </tr>
+    <tr>
+      <td>Class E</td>
+      <td>240 to 255</td>
+      <td>Not used for normal host networks</td>
+      <td>Reserved or experimental</td>
+    </tr>
+  </tbody>
+</table>
+
+Take this address:
+
+```text
+192.168.1.20
+```
+
+The first octet is `192`. Because `192` falls between `192` and `223`, this is a Class C address in classful addressing.
+
+Class C has the default mask:
+
+```text
+255.255.255.0
+```
+
+That is the same as:
+
+```text
+/24
+```
+
+So the address can be understood as:
+
+```text
+Network ID: 192.168.1.0
+Host:       20
+```
+
+The class decides the mask automatically. That was simple, but it created a serious problem.
+
+## Why classful addressing wasted addresses
+
+Classful addressing gives fixed network sizes. A Class C network has 8 host bits:
+
+```text
+2^8 = 256 total addresses
+```
+
+In a traditional IPv4 subnet, two addresses are normally reserved:
+
+```text
+Network address:   192.168.1.0
+Broadcast address: 192.168.1.255
+```
+
+So a Class C network gives:
+
+```text
+256 - 2 = 254 usable host addresses
+```
+
+Now imagine a company needs only 50 devices. A Class C network gives 254 usable host addresses, so more than 200 addresses are unused.
+
+If another company needs 500 devices, a Class C network is too small. The next larger traditional class is Class B, which gives 16 host bits:
+
+```text
+2^16 - 2 = 65,534 usable host addresses
+```
+
+That is far too large for 500 devices. Thousands of addresses are wasted.
+
+This is why subnetting became important.
+
+## Type 2: subnet addressing
+
+Subnetting means dividing one larger network into smaller networks.
+
+Suppose you have this network:
+
+```text
+192.168.1.0/24
+```
+
+A `/24` network has 8 host bits:
+
+```text
+32 total bits - 24 network bits = 8 host bits
+```
+
+That gives:
+
+```text
+2^8 = 256 total addresses
+256 - 2 = 254 usable host addresses
+```
+
+Now suppose one office does not need one big network. It wants separate networks for:
+
+- HR
+- Finance
+- CCTV
+- Guest Wi-Fi
+
+You can divide the `/24` into four `/26` subnets.
+
+Why `/26`? Because you borrow 2 bits from the host portion:
+
+```text
+Original:  /24
+Borrow:    2 bits
+New mask:  /26
+```
+
+Borrowing 2 bits creates:
+
+```text
+2^2 = 4 subnets
+```
+
+Each `/26` subnet has:
+
+```text
+32 - 26 = 6 host bits
+2^6 = 64 total addresses
+64 - 2 = 62 usable hosts
+```
+
+The four subnet blocks are:
+
+```text
+192.168.1.0/26
+192.168.1.64/26
+192.168.1.128/26
+192.168.1.192/26
+```
+
+Each subnet moves by 64 because the block size is 64.
+
+This gives each department a separate network. That improves broadcast control, makes access rules easier, and keeps network management cleaner.
+
+## Type 3: classless addressing with CIDR
+
+Subnetting reduced waste, but the Internet still needed a more flexible addressing model.
+
+CIDR means Classless Inter-Domain Routing. It removes the requirement that a network must follow Class A, B, or C boundaries.
+
+Instead of saying:
+
+```text
+This is Class C, so it must be /24.
+```
+
+CIDR says:
+
+```text
+Write the exact prefix length.
+```
+
+Examples:
+
+```text
+192.168.1.0/27
+10.10.0.0/20
+172.16.5.0/29
+```
+
+The number after `/` tells exactly how many bits belong to the network.
+
+For example:
+
+```text
+192.168.1.0/27
+```
+
+Here:
+
+```text
+Network bits = 27
+Host bits    = 32 - 27 = 5
+```
+
+So the subnet has:
+
+```text
+2^5 = 32 total addresses
+32 - 2 = 30 usable host addresses
+```
+
+This is much closer to a small requirement than a full Class C network. CIDR lets networks be assigned in sizes that fit the real need.
+
+## The evolution in one picture
+
+```text
+Classful addressing
+Fixed network sizes
+        |
+        v
+Address waste became a problem
+        |
+        v
+Subnetting
+Large networks were divided into smaller networks
+        |
+        v
+More flexibility was still needed
+        |
+        v
+CIDR
+Use any prefix length that fits the requirement
+```
+
+The important point is that subnetting and CIDR are not random extra topics. They solve the limitations of classful addressing.
+
+## Classful vs subnetting vs CIDR
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>Classful addressing</th>
+      <th>Subnetting</th>
+      <th>CIDR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Main idea</td>
+      <td>Use fixed address classes</td>
+      <td>Divide a network into smaller networks</td>
+      <td>Use exact prefix lengths</td>
+    </tr>
+    <tr>
+      <td>Mask</td>
+      <td>Fixed: /8, /16, or /24</td>
+      <td>Changed by borrowing host bits</td>
+      <td>Any valid prefix length</td>
+    </tr>
+    <tr>
+      <td>Address waste</td>
+      <td>High</td>
+      <td>Lower</td>
+      <td>Much lower</td>
+    </tr>
+    <tr>
+      <td>Example</td>
+      <td>Class C uses /24</td>
+      <td>192.168.1.0/24 split into /26</td>
+      <td>192.168.1.0/27</td>
+    </tr>
+    <tr>
+      <td>Used today</td>
+      <td>Mainly for learning and legacy context</td>
+      <td>Yes</td>
+      <td>Yes, standard practice</td>
+    </tr>
+  </tbody>
+</table>
+
+## Common mistakes beginners make
+
+**Mistake 1: thinking Class C always means /24 today.** In classful addressing, Class C used `/24`. In modern CIDR notation, an address that starts with `192` can still be written with another prefix, such as `192.168.1.0/27`.
+
+**Mistake 2: counting total addresses as usable hosts.** A `/26` has 64 total addresses, but usually 62 usable hosts because the network and broadcast addresses are reserved.
+
+**Mistake 3: memorizing classes before understanding bits.** Classes become easier when you know that IPv4 has 32 bits and a mask divides network bits from host bits.
+
+**Mistake 4: treating subnetting as only a formula.** The formulas matter, but subnetting is mainly about dividing networks into useful blocks.
+
+## Simple analogy
+
+Imagine a city with houses.
+
+Classful addressing says every family must choose only a small, medium, or large house. If the family needs something in between, space is wasted.
+
+Subnetting says a large house can be divided into apartments. Now different families can use the same building more efficiently.
+
+CIDR says the house can be built closer to the exact size needed. This is why CIDR is more flexible than fixed classes.
+
+## Best learning order
+
+If you are new to computer networks, learn this topic in this order:
+
+1. IPv4 structure: 32 bits and 4 octets
+2. Network portion and host portion
+3. Classful addressing: Classes A, B, C, D, and E
+4. Default subnet masks
+5. Subnet masks and prefix notation
+6. Subnetting: borrowing bits, block size, hosts, and subnets
+7. CIDR and classless addressing
+
+This order matters because subnetting is much easier when you already understand what the mask is doing.
+
+<ArticleQuiz
+  question="How many usable host addresses are available in 192.168.1.0/27 in a traditional IPv4 subnet?"
+  options={["32", "31", "30", "27"]}
+  answer="30"
+/>
+
+## Practical summary
+
+Classful addressing divided IPv4 into fixed classes. It was simple, but it wasted many addresses.
+
+Subnetting improved the situation by dividing a larger network into smaller networks. A `/24` can become four `/26` networks, each with 62 usable hosts.
+
+CIDR is the modern approach. It uses prefix lengths like `/20`, `/27`, and `/29` so networks can be sized more accurately.
+
+Small challenge: take `192.168.10.0/24` and divide it into `/26` subnets. Write the four network addresses, then calculate the usable hosts per subnet. If you can do that without guessing, classful addressing, subnetting, and CIDR are starting to connect.
+
+## Further reading
+
+- [RFC 791: Internet Protocol](https://www.rfc-editor.org/info/rfc791/)
+- [RFC 950: Internet Standard Subnetting Procedure](https://www.rfc-editor.org/info/rfc950/)
+- [RFC 4632: Classless Inter-domain Routing](https://www.rfc-editor.org/rfc/rfc4632.html)

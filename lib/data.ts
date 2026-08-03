@@ -32,6 +32,14 @@ export const articles = [
     slug: "what-happens-when-you-enter-a-url",
   },
   {
+    category: "Computer Networks",
+    title: "IP addressing explained: classful, subnetting, and CIDR",
+    excerpt: "Understand how IPv4 addressing evolved from fixed classes to subnetting and CIDR with masks, host counts, and examples.",
+    date: "11 min read",
+    color: "from-emerald-500/30 to-teal-500/5",
+    slug: "ip-addressing-classful-subnetting-cidr",
+  },
+  {
     category: "DotNet",
     title: "API works locally but returns 502 after deployment: how to debug it",
     excerpt: "Learn a practical layer-by-layer process for debugging deployed APIs that fail with 502 Bad Gateway.",

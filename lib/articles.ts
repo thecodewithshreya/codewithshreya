@@ -13,6 +13,8 @@ const articleLoaders = {
     import("@/content/blog/debug-api-502-after-deployment.mdx"),
   "what-happens-when-you-enter-a-url": () =>
     import("@/content/blog/what-happens-when-you-enter-a-url.mdx"),
+  "ip-addressing-classful-subnetting-cidr": () =>
+    import("@/content/blog/ip-addressing-classful-subnetting-cidr.mdx"),
 };
 
 export type ArticleSlug = keyof typeof articleLoaders;
