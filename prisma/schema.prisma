@@ -27,3 +27,72 @@ model ArticleComment {
   @@index([articleSlug, createdAt(sort: Desc)])
   @@map("article_comments")
 }
+
+model DynamicArticle {
+  id        String   @id @default(cuid())
+  title     String   @db.VarChar(180)
+  slug      String   @unique @db.VarChar(220)
+  category  String   @db.VarChar(80)
+  excerpt   String   @db.VarChar(320)
+  readTime  String   @default("8 min read") @map("read_time") @db.VarChar(40)
+  color     String   @default("from-indigo-500/30 to-violet-500/5") @db.VarChar(120)
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@index([createdAt(sort: Desc)])
+  @@map("dynamic_articles")
+}
+
+model DynamicVideo {
+  id                String   @id @default(cuid())
+  title             String   @db.VarChar(180)
+  topic             String   @db.VarChar(80)
+  subject           String?  @db.VarChar(80)
+  duration          String   @default("Video lesson") @db.VarChar(40)
+  color             String   @default("from-violet-600 to-indigo-950") @db.VarChar(120)
+  level             String   @default("Beginner") @db.VarChar(40)
+  description       String   @db.VarChar(360)
+  youtubeId         String?  @map("youtube_id") @db.VarChar(80)
+  youtubePlaylistId String?  @map("youtube_playlist_id") @db.VarChar(120)
+  youtubeUrl        String?  @map("youtube_url") @db.VarChar(500)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([topic])
+  @@index([subject])
+  @@index([createdAt(sort: Desc)])
+  @@map("dynamic_videos")
+}
+
+model DynamicQuiz {
+  id        String   @id @default(cuid())
+  title     String   @db.VarChar(180)
+  topic     String   @db.VarChar(180)
+  questions Int      @default(10)
+  level     String   @default("Beginner") @db.VarChar(40)
+  tags      String[] @default([])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([level])
+  @@index([createdAt(sort: Desc)])
+  @@map("dynamic_quizzes")
+}
+
+model DynamicPyqPaper {
+  id        String   @id @default(cuid())
+  title     String   @db.VarChar(180)
+  source    String   @default("GATE CSE") @db.VarChar(80)
+  questions String   @default("Question paper") @db.VarChar(120)
+  year      String   @db.VarChar(10)
+  fileId    String   @map("file_id") @db.VarChar(180)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([source])
+  @@index([year])
+  @@index([createdAt(sort: Desc)])
+  @@map("dynamic_pyq_papers")
+}

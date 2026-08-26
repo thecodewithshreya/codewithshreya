@@ -20,7 +20,7 @@ import { ArticleCard, QuizCard, ToolCard, VideoCard } from "@/components/content
 import { HomeScrollRow } from "@/components/home-scroll-row";
 import { Reveal } from "@/components/motion/reveal";
 import { SectionHeading } from "@/components/section-heading";
-import { articles, quizzes, videos } from "@/lib/data";
+import { getAllArticles, getAllQuizzes, getAllVideos } from "@/lib/dynamic-content";
 import type { ReactNode } from "react";
 
 const tools = [
@@ -113,7 +113,15 @@ const organizationJsonLd = {
     "Computer Science and programming learning platform for tutorials, quizzes, PYQs, and interview preparation.",
 };
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [articles, videos, quizzes] = await Promise.all([
+    getAllArticles(),
+    getAllVideos(),
+    getAllQuizzes(),
+  ]);
+
   return (
     <>
       <Script

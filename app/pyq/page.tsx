@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { FileText, GraduationCap, Trophy } from "lucide-react";
 import { PyqPaperList } from "@/components/pyq-paper-list";
 import { PyqDownloadAll } from "@/components/pyq-download-all";
+import { getAllPyqPapers } from "@/lib/dynamic-content";
 
 export const metadata: Metadata = {
   title: "Previous Year Questions",
@@ -49,7 +50,11 @@ const pyqPapers = pyqSets.map(([title, source, questions, year, fileId]) => ({
   fileId,
 }));
 
-export default function PyqPage() {
+export const dynamic = "force-dynamic";
+
+export default async function PyqPage() {
+  const papers = await getAllPyqPapers(pyqPapers);
+
   return (
     <>
       <section className="container-page py-10">
@@ -82,7 +87,7 @@ export default function PyqPage() {
             bulkDownloadUrl={gateCseBulkDownloadUrl}
           />
         </div>
-        <PyqPaperList papers={pyqPapers} />
+        <PyqPaperList papers={papers} />
       </section>
 
       <section className="container-page py-16">
