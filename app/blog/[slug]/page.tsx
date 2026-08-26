@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft, Clock } from "lucide-react";
 import { notFound } from "next/navigation";
@@ -6,6 +7,8 @@ import { hasArticle, loadArticle } from "@/lib/articles";
 import { articles } from "@/lib/data";
 import { BlogEngagement } from "@/components/blog-engagement";
 import { ReadingProgress } from "@/components/motion/reading-progress";
+import { DynamicArticleContent } from "@/components/dynamic-article-content";
+import { getDynamicArticleBySlug, type ArticleSummary } from "@/lib/dynamic-content";
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
@@ -17,11 +20,15 @@ export function generateStaticParams() {
     .map((article) => ({ slug: article.slug }));
 }
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const article = articles.find((item) => item.slug === slug);
+  const article =
+    articles.find((item) => item.slug === slug) ??
+    (await getDynamicArticleBySlug(slug));
 
   if (!article) {
     return {};
@@ -37,12 +44,38 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
   const article = articles.find((item) => item.slug === slug);
 
-  if (!article || !hasArticle(slug)) {
+  if (article && hasArticle(slug)) {
+    const { default: ArticleContent } = await loadArticle(slug);
+
+    return (
+      <ArticleLayout article={article} slug={slug}>
+        <ArticleContent />
+      </ArticleLayout>
+    );
+  }
+
+  const dynamicArticle = await getDynamicArticleBySlug(slug);
+
+  if (!dynamicArticle) {
     notFound();
   }
 
-  const { default: ArticleContent } = await loadArticle(slug);
+  return (
+    <ArticleLayout article={dynamicArticle} slug={slug}>
+      <DynamicArticleContent content={dynamicArticle.content} />
+    </ArticleLayout>
+  );
+}
 
+function ArticleLayout({
+  article,
+  slug,
+  children,
+}: {
+  article: ArticleSummary;
+  slug: string;
+  children: ReactNode;
+}) {
   return (
     <>
       <ReadingProgress />
@@ -70,7 +103,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         <BlogEngagement slug={slug} title={article.title}>
           <div className="article-content mt-10">
-            <ArticleContent />
+            {children}
           </div>
         </BlogEngagement>
         </div>

@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import { BlogFilterList } from "@/components/blog-filter-list";
-import { articles } from "@/lib/data";
+import { getAllArticles } from "@/lib/dynamic-content";
 
 export const metadata: Metadata = {
   title: "Blog",
   description: "Computer science articles, tutorials, and study guides.",
 };
 
-export default function BlogPage() {
+export const dynamic = "force-dynamic";
+
+export default async function BlogPage() {
+  const articles = await getAllArticles();
+
   return (
     <>
       <section className="container-page py-10">

@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import { VideoFilterList } from "@/components/video-filter-list";
-import { videos } from "@/lib/data";
+import { getAllVideos } from "@/lib/dynamic-content";
 
 export const metadata: Metadata = {
   title: "Videos",
   description: "Focused computer science video lessons.",
 };
 
-export default function VideosPage() {
+export const dynamic = "force-dynamic";
+
+export default async function VideosPage() {
+  const videos = await getAllVideos();
+
   return (
     <>
       <section className="container-page py-10">

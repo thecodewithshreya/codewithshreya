@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
 import { QuizCard } from "@/components/content-cards";
 import { StaggerReveal } from "@/components/motion/reveal";
-import { quizzes } from "@/lib/data";
+import { getAllQuizzes } from "@/lib/dynamic-content";
 
 export const metadata: Metadata = {
   title: "Quizzes",
   description: "Test your computer science knowledge with focused quizzes.",
 };
 
-export default function QuizzesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function QuizzesPage() {
+  const quizzes = await getAllQuizzes();
+
   return (
     <>
       <section className="container-page py-10">
