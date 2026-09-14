@@ -11,6 +11,7 @@ export type ArticleSummary = {
 };
 
 export type VideoSummary = {
+  id?: string;
   title: string;
   topic: string;
   subject?: string;
@@ -25,6 +26,7 @@ export type VideoSummary = {
 };
 
 export type QuizSummary = {
+  id?: string;
   title: string;
   topic: string;
   questions: number;
@@ -33,6 +35,7 @@ export type QuizSummary = {
 };
 
 export type PyqPaperSummary = {
+  id?: string;
   title: string;
   source: string;
   questions: string;
@@ -174,6 +177,7 @@ function mapArticle(article: {
 }
 
 function mapVideo(video: {
+  id?: string;
   title: string;
   topic: string;
   subject: string | null;
@@ -186,6 +190,7 @@ function mapVideo(video: {
   youtubeUrl: string | null;
 }): VideoSummary {
   return {
+    id: video.id,
     title: video.title,
     topic: video.topic,
     subject: video.subject ?? undefined,
@@ -200,6 +205,7 @@ function mapVideo(video: {
 }
 
 function mapQuiz(quiz: {
+  id?: string;
   title: string;
   topic: string;
   questions: number;
@@ -207,6 +213,7 @@ function mapQuiz(quiz: {
   tags: string[];
 }): QuizSummary {
   return {
+    id: quiz.id,
     title: quiz.title,
     topic: quiz.topic,
     questions: quiz.questions,
@@ -216,6 +223,7 @@ function mapQuiz(quiz: {
 }
 
 function mapPyqPaper(paper: {
+  id?: string;
   title: string;
   source: string;
   questions: string;
@@ -223,6 +231,7 @@ function mapPyqPaper(paper: {
   fileId: string;
 }): PyqPaperSummary {
   return {
+    id: paper.id,
     title: paper.title,
     source: paper.source,
     questions: paper.questions,

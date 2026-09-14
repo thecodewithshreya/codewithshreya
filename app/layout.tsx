@@ -65,7 +65,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen antialiased">
         <Navbar />
-        <main>{children}</main>
+        <main className="pt-4 sm:pt-6">{children}</main>
         <Footer />
       </body>
       <GoogleAnalytics gaId="G-VQM236MCCS" />

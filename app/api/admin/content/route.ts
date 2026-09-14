@@ -114,6 +114,163 @@ export async function POST(request: Request) {
   }
 }
 
+export async function PATCH(request: Request) {
+  const guard = await requireAdmin();
+  if (guard) return guard;
+
+  const payload = await request.json().catch(() => null);
+  if (!payload || typeof payload.type !== "string" || typeof payload.id !== "string") {
+    return NextResponse.json({ error: "Invalid content payload." }, { status: 400 });
+  }
+
+  const id = payload.id.trim();
+  if (!id) {
+    return NextResponse.json({ error: "Content ID is required." }, { status: 400 });
+  }
+
+  const prisma = getPrisma();
+
+  try {
+    if (payload.type === "article") {
+      const title = requiredString(payload.title, "Title", 180);
+      const slug = slugify(requiredString(payload.slug || payload.title, "Slug", 220));
+      const category = enumValue(payload.category, articleCategories, "Computer Networks");
+      const excerpt = requiredString(payload.excerpt, "Excerpt", 320);
+      const content = requiredString(payload.content, "Content", 12000);
+
+      const article = await prisma.dynamicArticle.update({
+        where: { id },
+        data: {
+          title,
+          slug,
+          category,
+          excerpt,
+          readTime: optionalString(payload.readTime, 40) || "8 min read",
+          color: optionalString(payload.color, 120) || "from-indigo-500/30 to-violet-500/5",
+          content,
+        },
+      });
+
+      return NextResponse.json({ item: article });
+    }
+
+    if (payload.type === "video") {
+      const youtubeUrl = optionalString(payload.youtubeUrl, 500);
+      const video = await prisma.dynamicVideo.update({
+        where: { id },
+        data: {
+          title: requiredString(payload.title, "Title", 180),
+          topic: enumValue(payload.topic, videoTopics, "Core CS"),
+          subject: optionalString(payload.subject, 80),
+          duration: optionalString(payload.duration, 40) || "Video lesson",
+          color: optionalString(payload.color, 120) || "from-violet-600 to-indigo-950",
+          level: enumValue(payload.level, levels, "Beginner"),
+          description: requiredString(payload.description, "Description", 360),
+          youtubeId: optionalString(payload.youtubeId, 80) || extractYouTubeId(youtubeUrl),
+          youtubePlaylistId: optionalString(payload.youtubePlaylistId, 120),
+          youtubeUrl,
+        },
+      });
+
+      return NextResponse.json({ item: video });
+    }
+
+    if (payload.type === "quiz") {
+      const quiz = await prisma.dynamicQuiz.update({
+        where: { id },
+        data: {
+          title: requiredString(payload.title, "Title", 180),
+          topic: requiredString(payload.topic, "Topic", 180),
+          questions: Math.max(1, Math.min(Number(payload.questions) || 10, 500)),
+          level: enumValue(payload.level, levels, "Beginner"),
+          tags: parseTags(payload.tags),
+        },
+      });
+
+      return NextResponse.json({ item: quiz });
+    }
+
+    if (payload.type === "pyq") {
+      const paper = await prisma.dynamicPyqPaper.update({
+        where: { id },
+        data: {
+          title: requiredString(payload.title, "Title", 180),
+          source: optionalString(payload.source, 80) || "GATE CSE",
+          questions: optionalString(payload.questions, 120) || "Question paper",
+          year: requiredString(payload.year, "Year", 10),
+          fileId: requiredString(payload.fileId, "Google Drive file ID", 180),
+        },
+      });
+
+      return NextResponse.json({ item: paper });
+    }
+
+    return NextResponse.json({ error: "Unknown content type." }, { status: 400 });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to update content.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  const guard = await requireAdmin();
+  if (guard) return guard;
+
+  const payload = await request.json().catch(() => null);
+  if (!payload || typeof payload.type !== "string" || typeof payload.id !== "string") {
+    return NextResponse.json({ error: "Invalid content payload." }, { status: 400 });
+  }
+
+  const id = payload.id.trim();
+  if (!id) {
+    return NextResponse.json({ error: "Content ID is required." }, { status: 400 });
+  }
+
+  const prisma = getPrisma();
+
+  try {
+    if (payload.type === "article") {
+      const article = await prisma.dynamicArticle.findUnique({
+        where: { id },
+        select: { slug: true },
+      });
+
+      if (!article) {
+        return NextResponse.json({ error: "Article not found." }, { status: 404 });
+      }
+
+      await prisma.$transaction([
+        prisma.articleLike.deleteMany({ where: { articleSlug: article.slug } }),
+        prisma.articleComment.deleteMany({ where: { articleSlug: article.slug } }),
+        prisma.dynamicArticle.delete({ where: { id } }),
+      ]);
+      return NextResponse.json({ ok: true });
+    }
+
+    if (payload.type === "video") {
+      await prisma.dynamicVideo.delete({ where: { id } });
+      return NextResponse.json({ ok: true });
+    }
+
+    if (payload.type === "quiz") {
+      await prisma.dynamicQuiz.delete({ where: { id } });
+      return NextResponse.json({ ok: true });
+    }
+
+    if (payload.type === "pyq") {
+      await prisma.dynamicPyqPaper.delete({ where: { id } });
+      return NextResponse.json({ ok: true });
+    }
+
+    return NextResponse.json({ error: "Unknown content type." }, { status: 400 });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to delete content.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}
+
 async function requireAdmin() {
   if (!isAdminConfigured()) {
     return NextResponse.json(
