@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { hasArticle } from "@/lib/articles";
+import { getDynamicArticleBySlug } from "@/lib/dynamic-content";
 import { getPrisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -20,10 +21,18 @@ function invalidRequest(message: string) {
   return NextResponse.json({ error: message }, { status: 400 });
 }
 
+async function articleExists(slug: string) {
+  if (hasArticle(slug)) {
+    return true;
+  }
+
+  return Boolean(await getDynamicArticleBySlug(slug));
+}
+
 export async function GET(request: Request, { params }: RouteContext) {
   const { slug } = await params;
 
-  if (!hasArticle(slug)) {
+  if (!(await articleExists(slug))) {
     return NextResponse.json({ error: "Article not found." }, { status: 404 });
   }
 
@@ -68,7 +77,7 @@ export async function GET(request: Request, { params }: RouteContext) {
 export async function POST(request: Request, { params }: RouteContext) {
   const { slug } = await params;
 
-  if (!hasArticle(slug)) {
+  if (!(await articleExists(slug))) {
     return NextResponse.json({ error: "Article not found." }, { status: 404 });
   }
 

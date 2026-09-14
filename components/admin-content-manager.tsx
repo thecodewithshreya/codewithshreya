@@ -1,9 +1,9 @@
 "use client";
 
-import { BookOpenText, FileQuestion, GraduationCap, LogOut, PlayCircle } from "lucide-react";
+import { AlertCircle, BookOpenText, CheckCircle2, FileQuestion, GraduationCap, LogOut, PlayCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { getAdminContent } from "@/lib/dynamic-content";
 
 type AdminContent = Awaited<ReturnType<typeof getAdminContent>>;
@@ -41,6 +41,8 @@ const videoGradientOptions = [
   { label: "Emerald / Teal", value: "from-emerald-600 to-teal-950" },
 ];
 
+const saveMessageKey = "codewithshreya-admin-save-message";
+
 export function AdminContentManager({ content }: { content: AdminContent }) {
   const router = useRouter();
   const [activeType, setActiveType] = useState<ContentType>("article");
@@ -48,8 +50,27 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    const savedMessage = sessionStorage.getItem(saveMessageKey);
+
+    if (savedMessage) {
+      setMessage(savedMessage);
+      sessionStorage.removeItem(saveMessageKey);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!message) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => setMessage(""), 7000);
+    return () => window.clearTimeout(timeout);
+  }, [message]);
+
   async function submitContent(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setSaving(true);
     setMessage("");
     setError("");
@@ -70,8 +91,12 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
       return;
     }
 
-    event.currentTarget.reset();
-    setMessage("Content saved. Public pages are updated.");
+    const activeLabel = contentTypes.find((item) => item.id === activeType)?.label ?? "Content";
+    const successMessage = `${activeLabel} saved successfully. Public pages are updated.`;
+
+    form.reset();
+    sessionStorage.setItem(saveMessageKey, successMessage);
+    setMessage(successMessage);
     setSaving(false);
     router.refresh();
   }
@@ -119,14 +144,16 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
           </button>
         </div>
 
+        <div className="mt-5" aria-live="polite" aria-atomic="true">
+          {message ? <StatusBanner tone="success" message={message} /> : null}
+          {error ? <StatusBanner tone="error" message={error} /> : null}
+        </div>
+
         <form onSubmit={submitContent} className="mt-6 grid gap-4">
           {activeType === "article" ? <ArticleFields /> : null}
           {activeType === "video" ? <VideoFields /> : null}
           {activeType === "quiz" ? <QuizFields /> : null}
           {activeType === "pyq" ? <PyqFields /> : null}
-
-          {message ? <p className="text-sm font-medium text-emerald-400">{message}</p> : null}
-          {error ? <p className="text-sm font-medium text-rose-400">{error}</p> : null}
 
           <button type="submit" className="button-primary w-full sm:w-fit" disabled={saving}>
             {saving ? "Saving..." : `Add ${contentTypes.find((item) => item.id === activeType)?.label}`}
@@ -147,6 +174,31 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
           and appears before static cards.
         </p>
       </aside>
+    </div>
+  );
+}
+
+function StatusBanner({
+  tone,
+  message,
+}: {
+  tone: "success" | "error";
+  message: string;
+}) {
+  const success = tone === "success";
+  const Icon = success ? CheckCircle2 : AlertCircle;
+
+  return (
+    <div
+      role="status"
+      className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-sm ${
+        success
+          ? "border-emerald-400/40 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+          : "border-rose-400/40 bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300"
+      }`}
+    >
+      <Icon size={18} className="mt-0.5 shrink-0" />
+      <span>{message}</span>
     </div>
   );
 }
