@@ -3,24 +3,24 @@ import Script from "next/script";
 import {
   ArrowRight,
   Binary,
-  BookOpenText,
   Braces,
+  BriefcaseBusiness,
   Calculator,
-  Code2,
+  CheckCircle2,
   FileCode2,
-  FileQuestion,
-  FileText,
   GraduationCap,
-  Layers3,
-  PlayCircle,
   Search,
-  TerminalSquare,
 } from "lucide-react";
-import { ArticleCard, QuizCard, ToolCard, VideoCard } from "@/components/content-cards";
+import { ArticleCard, ToolCard, VideoCard } from "@/components/content-cards";
+import { DailyQuestionCard } from "@/components/daily-question-card";
 import { HomeScrollRow } from "@/components/home-scroll-row";
 import { Reveal } from "@/components/motion/reveal";
 import { SectionHeading } from "@/components/section-heading";
-import { getAllArticles, getAllQuizzes, getAllVideos } from "@/lib/dynamic-content";
+import { SubjectCard } from "@/components/subject-cards";
+import { getDailyQuestion } from "@/lib/daily-question";
+import { staticPyqPapers } from "@/lib/pyq";
+import { getSiteContent, subjectsWithContent } from "@/lib/site-content";
+import { subjects, tracks } from "@/lib/subjects";
 import type { ReactNode } from "react";
 
 const tools = [
@@ -54,52 +54,20 @@ const tools = [
   },
 ];
 
-const paths = [
-  { title: "Learn", text: "Read one concept with examples", icon: BookOpenText },
-  { title: "Watch", text: "Use video for the first mental model", icon: PlayCircle },
-  { title: "Practice", text: "Test recall with focused quizzes", icon: FileQuestion },
-  { title: "Build", text: "Run code and apply the idea", icon: TerminalSquare },
-];
-
-const learningPaths = [
+const trackCards = [
   {
-    title: "Core CS",
-    text: "DSA, OS, DBMS, CN, and algorithms",
-    icon: Layers3,
-    href: "/videos#core-cs",
-  },
-  {
-    title: "Exam Prep",
-    text: "PYQs, topic filters, and timed practice",
+    track: tracks.gate,
     icon: GraduationCap,
-    href: "/pyq",
+    accent: "from-violet-500/25 via-panel to-indigo-500/10 border-violet-500/30 hover:border-violet-400/70",
+    iconStyle: "bg-violet-500/15 text-violet-300",
+    points: ["Subject-wise notes and lectures", "Topic quizzes with explanations", "GATE CSE papers from 2007"],
   },
   {
-    title: "Developer Tools",
-    text: "Format, convert, compare, and test",
-    icon: Braces,
-    href: "/tools",
-  },
-];
-
-const dotNetPaths = [
-  {
-    title: "C# Basics",
-    text: "Types, strings, records, methods, and OOP basics",
-    icon: Code2,
-    href: "/blog/csharp-basics-for-dotnet-interviews",
-  },
-  {
-    title: ".NET Roadmap",
-    text: "C#, ASP.NET Core, SQL, EF Core, testing, and deployment",
-    icon: GraduationCap,
-    href: "/blog/how-to-become-dotnet-developer-roadmap",
-  },
-  {
-    title: "Localization",
-    text: "Culture, resource files, translated UI, dates, and prices",
-    icon: FileText,
-    href: "/blog/dotnet-localization-globalization",
+    track: tracks.jobs,
+    icon: BriefcaseBusiness,
+    accent: "from-cyan-500/20 via-panel to-blue-500/10 border-cyan-500/30 hover:border-cyan-400/70",
+    iconStyle: "bg-cyan-500/15 text-cyan-300",
+    points: ["Core CS for technical rounds", "C#, .NET and career roadmaps", "Online compiler in 5 languages"],
   },
 ];
 
@@ -110,17 +78,25 @@ const organizationJsonLd = {
   url: "https://codewithshreya.com",
   logo: "https://codewithshreya.com/codewithshreya-logo-final.png",
   description:
-    "Computer Science and programming learning platform for tutorials, quizzes, PYQs, and interview preparation.",
+    "Computer science learning platform for GATE CSE preparation and software job interviews: articles, video lectures, quizzes, previous year papers and an online compiler.",
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [articles, videos, quizzes] = await Promise.all([
-    getAllArticles(),
-    getAllVideos(),
-    getAllQuizzes(),
-  ]);
+  const content = await getSiteContent();
+  const { articles, videos, quizzes } = content;
+  const coreSubjects = subjectsWithContent(
+    content,
+    subjects.filter((subject) => subject.tracks.length > 1),
+  );
+  const daily = getDailyQuestion();
+  const stats = [
+    { label: "Articles", value: articles.length },
+    { label: "Video lessons", value: videos.length },
+    { label: "Practice quizzes", value: quizzes.length },
+    { label: "GATE papers", value: staticPyqPapers.length },
+  ];
 
   return (
     <>
@@ -132,197 +108,141 @@ export default async function Home() {
 
       <section className="premium-hero relative overflow-hidden border-b border-line">
         <div className="premium-hero-glow absolute inset-0" />
-        <div className="container-page relative grid min-h-[360px] items-center gap-6 py-8 lg:min-h-[390px] lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="container-page relative grid items-center gap-10 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:py-16">
           <Reveal direction="right">
-            <h1 className="max-w-2xl text-4xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Learn Computer Science{" "}
-              <span className="text-violet-300">in One Place.</span>
+            <p className="eyebrow">GATE CSE · Placements · Interviews</p>
+            <h1 className="mt-4 max-w-2xl text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Crack GATE and land your{" "}
+              <span className="text-violet-600 dark:text-violet-300">first tech job.</span>
             </h1>
-            <p className="mt-4 max-w-xl text-base leading-7 text-gray-300">
-              Blogs, videos, quizzes, PYQs, compiler practice, and developer tools for focused learning.
+            <p className="mt-5 max-w-xl text-base leading-7 text-gray-300">
+              Clear computer science explanations, video lectures, practice quizzes, previous year papers and an
+              online compiler, organised by subject and by goal.
             </p>
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-              <Link href="/blog" className="button-primary">
-                Start learning <ArrowRight size={17} />
-              </Link>
-              <Link href="/tools" className="button-secondary">
-                Explore tools <Code2 size={17} />
-              </Link>
-            </div>
+
+            <form action="/search" role="search" className="mt-7 flex max-w-xl gap-2">
+              <label className="relative flex-1">
+                <span className="sr-only">Search the site</span>
+                <Search
+                  size={18}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+                />
+                <input
+                  type="search"
+                  name="q"
+                  placeholder="Search a topic, e.g. normalization, subnetting"
+                  className="w-full rounded-xl border border-line bg-panel/80 py-3 pl-11 pr-4 text-sm text-white outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10"
+                />
+              </label>
+              <button type="submit" className="button-primary">
+                Search
+              </button>
+            </form>
+
+            <dl className="mt-8 grid max-w-xl grid-cols-2 gap-3 sm:grid-cols-4">
+              {stats.map((stat) => (
+                <div key={stat.label} className="flex flex-col-reverse">
+                  <dt className="text-xs text-gray-400">{stat.label}</dt>
+                  <dd className="text-2xl font-black text-white">{stat.value}</dd>
+                </div>
+              ))}
+            </dl>
           </Reveal>
 
           <Reveal direction="left" delay={0.12}>
-            <div className="cs-3d-scene relative mx-auto hidden h-[300px] w-full max-w-md lg:block" aria-hidden="true">
-              <div className="scene-orbit scene-orbit-one" />
-              <div className="scene-orbit scene-orbit-two" />
-              <div className="floating-cube cube-one">C#</div>
-              <div className="floating-cube cube-two">SQL</div>
-              <div className="floating-cube cube-three">API</div>
-              <div className="scene-laptop">
-                <div className="scene-screen">
-                  <div className="flex items-center gap-2 border-b border-line pb-4">
-                    <span className="h-3 w-3 rounded-full bg-rose-400" />
-                    <span className="h-3 w-3 rounded-full bg-amber-400" />
-                    <span className="h-3 w-3 rounded-full bg-emerald-400" />
-                    <span className="ml-3 text-xs text-gray-500">codewithshreya.academy</span>
-                  </div>
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                  {paths.map(({ title, text, icon: Icon }) => (
-                    <div key={title} className="scene-tile">
-                      <span className="grid h-11 w-11 place-items-center rounded-lg bg-violet-500/10 text-violet-300">
-                        <Icon size={22} />
-                      </span>
-                      <h2 className="mt-5 text-xl font-bold text-white">{title}</h2>
-                      <p className="mt-2 text-sm leading-6 text-gray-400">{text}</p>
+            <div className="grid gap-4">
+              <p className="text-sm font-semibold text-gray-400">What are you preparing for?</p>
+              {trackCards.map(({ track, icon: Icon, accent, iconStyle, points }) => (
+                <Link
+                  key={track.id}
+                  href={track.href}
+                  className={`group card bg-gradient-to-br p-6 transition ${accent}`}
+                >
+                  <div className="flex items-start gap-4">
+                    <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl ${iconStyle}`}>
+                      <Icon size={24} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="flex items-center justify-between gap-2 text-xl font-extrabold text-white">
+                        {track.title}
+                        <ArrowRight size={18} className="shrink-0 text-gray-400 transition group-hover:translate-x-1" />
+                      </h2>
+                      <ul className="mt-3 grid gap-1.5 text-sm text-gray-300">
+                        {points.map((point) => (
+                          <li key={point} className="flex items-center gap-2">
+                            <CheckCircle2 size={15} className="shrink-0 text-emerald-400" /> {point}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  ))}
                   </div>
-                  <div className="mt-5 rounded-lg border border-white/10 bg-black/35 p-5">
-                    <div className="flex items-center gap-3 text-sm text-gray-500">
-                      <Search size={16} /> Search a topic
-                    </div>
-                    <p className="mt-3 text-lg font-bold text-white">C# basics, SQL joins, time complexity...</p>
-                  </div>
-                </div>
-                <div className="scene-base">
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                </div>
-              </div>
+                </Link>
+              ))}
             </div>
           </Reveal>
         </div>
       </section>
 
-      <section className="learning-path-section py-14">
-        <div className="container-page">
-          <div className="learning-path-shell">
-            <div className="learning-dots learning-dots-left" />
-            <div className="learning-dots learning-dots-right" />
-            <div className="text-center">
-              <span className="learning-pill">Learning paths</span>
-              <h2 className="mt-4 text-3xl font-black tracking-tight text-white sm:text-4xl">
-                Choose what you want to improve
-              </h2>
-              <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-gray-400">
-                Move between explanations, practice, code, and previous-year questions without losing context.
-              </p>
-            </div>
-            <HomeScrollRow className="mt-9">
-            {learningPaths.map(({ title, text, icon: Icon, href }) => (
-              <Link key={title} href={href} className="learning-path-card group">
-                <span className="learning-path-icon">
-                  <Icon size={30} />
-                </span>
-                <h3 className="mt-5 text-xl font-extrabold text-white">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-gray-400">{text}</p>
-                <span className="learning-path-action">
-                  Open path <ArrowRight size={15} />
-                </span>
-              </Link>
-            ))}
-            </HomeScrollRow>
-          </div>
-        </div>
-      </section>
+      {daily ? (
+        <section className="container-page pt-14">
+          <DailyQuestionCard question={daily} />
+        </section>
+      ) : null}
 
-      <section className="dotnet-section py-14">
+      <section className="py-14">
         <div className="container-page">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <SectionHeading
-              eyebrow=".NET"
-              title="Build strong .NET fundamentals"
-              description="Start with C#, understand the .NET platform, then move into ASP.NET Core and real application skills."
+              eyebrow="Core subjects"
+              title="Learn once, use it for GATE and interviews"
+              description="DSA, DBMS, operating systems and computer networks are part of the GATE CSE syllabus and come up in almost every technical interview."
             />
-            <Link href="/blog/csharp-basics-for-dotnet-interviews" className="button-secondary shrink-0">
-              Start .NET <ArrowRight size={16} />
+            <Link href="/topics" className="button-secondary shrink-0">
+              All subjects <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {dotNetPaths.map(({ title, text, icon: Icon, href }) => (
-              <Link key={title} href={href} className="dotnet-card group">
-                <span className="dotnet-icon">
-                  <Icon size={24} />
-                </span>
-                <h3 className="mt-5 text-xl font-extrabold text-white">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-gray-400">{text}</p>
-                <span className="dotnet-action">
-                  Open lesson <ArrowRight size={15} />
-                </span>
-              </Link>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {coreSubjects.map(({ subject, content: subjectContent }) => (
+              <SubjectCard key={subject.slug} subject={subject} content={subjectContent} />
             ))}
           </div>
         </div>
       </section>
 
-      <Preview
-        eyebrow="Latest blogs"
-        title="Read deep explanations"
-        href="/blog"
-        label="View all blogs"
-      >
-        {articles.slice(0, 3).map((article) => (
-          <ArticleCard key={article.title} article={article} />
+      <Preview eyebrow="Latest articles" title="Read clear explanations" href="/blog" label="View all articles">
+        {articles.slice(0, 6).map((article) => (
+          <ArticleCard key={article.slug ?? article.title} article={article} />
         ))}
       </Preview>
 
-      <Preview eyebrow="Videos" title="Watch visual lessons" href="/videos" label="Browse videos">
-        {videos.slice(0, 3).map((video) => (
-          <VideoCard key={video.title} video={video} />
+      <Preview eyebrow="Video lessons" title="Watch the lectures" href="/videos" label="Browse videos">
+        {videos.slice(0, 6).map((video) => (
+          <VideoCard key={video.id ?? video.youtubeId ?? video.title} video={video} />
         ))}
       </Preview>
 
-      <Preview eyebrow="Quizzes" title="Practice with topic cards" href="/quizzes" label="Start practice">
-        {quizzes.map((quiz) => (
-          <QuizCard key={quiz.title} quiz={quiz} />
-        ))}
-      </Preview>
-
-      <section className="border-y border-line bg-white/[0.015] py-20">
+      <section className="border-y border-line bg-white/[0.015] py-16">
         <div className="container-page">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <SectionHeading
               eyebrow="Tools"
-              title="Small utilities for students and developers"
-              description="Useful tools for formatting, conversion, debugging, and CS practice."
+              title="Code and practise in your browser"
+              description="An online compiler for Python, C#, Java, C++ and JavaScript, plus small utilities for students and developers."
             />
-            <Link href="/tools" className="button-secondary shrink-0">
-              Open tools <ArrowRight size={16} />
-            </Link>
+            <div className="flex shrink-0 gap-3">
+              <Link href="/compiler" className="button-primary">
+                Open compiler <ArrowRight size={16} />
+              </Link>
+              <Link href="/tools" className="button-secondary">
+                All tools
+              </Link>
+            </div>
           </div>
           <HomeScrollRow className="mt-10">
             {tools.map((tool) => (
               <ToolCard key={tool.title} tool={tool} />
             ))}
           </HomeScrollRow>
-        </div>
-      </section>
-
-      <section className="py-20">
-        <div className="container-page">
-          <Reveal className="card relative overflow-hidden border-violet-500/20 bg-gradient-to-br from-violet-500/15 via-panel to-indigo-500/10 p-8 sm:p-12">
-            <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_auto]">
-              <div>
-                <div className="flex items-center gap-3">
-                  <span className="grid h-12 w-12 place-items-center rounded-lg bg-violet-500/10 text-violet-300">
-                    <FileText size={25} />
-                  </span>
-                  <span className="eyebrow">PYQ practice</span>
-                </div>
-                <h2 className="mt-5 text-3xl font-bold text-white">Practice real exam questions by subject and year</h2>
-                <p className="mt-4 max-w-2xl leading-7 text-gray-400">
-                  Use PYQ cards for GATE, university papers, solved counts, and quick revision sessions.
-                </p>
-              </div>
-              <Link href="/pyq" className="button-primary">
-                Explore PYQs <ArrowRight size={17} />
-              </Link>
-            </div>
-          </Reveal>
         </div>
       </section>
     </>
@@ -343,7 +263,7 @@ function Preview({
   children: ReactNode;
 }) {
   return (
-    <section className="py-20">
+    <section className="py-14">
       <div className="container-page">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <SectionHeading eyebrow={eyebrow} title={title} />
@@ -351,9 +271,7 @@ function Preview({
             {label} <ArrowRight size={16} />
           </Link>
         </div>
-        <HomeScrollRow className="mt-10">
-          {children}
-        </HomeScrollRow>
+        <HomeScrollRow className="mt-10">{children}</HomeScrollRow>
       </div>
     </section>
   );

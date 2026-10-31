@@ -12,8 +12,11 @@ type PyqPaper = {
   fileId: string;
 };
 
-export function PyqPaperList({ papers }: { papers: PyqPaper[] }) {
-  const [selectedYear, setSelectedYear] = useState("all");
+export function PyqPaperList({ papers, initialYear }: { papers: PyqPaper[]; initialYear?: string }) {
+  // initialYear comes from /pyq?year=, e.g. the year links on the GATE page.
+  const [selectedYear, setSelectedYear] = useState(() =>
+    initialYear && papers.some((paper) => paper.year === initialYear) ? initialYear : "all",
+  );
   const [yearOpen, setYearOpen] = useState(false);
   const yearDropdownRef = useRef<HTMLDivElement>(null);
   const years = useMemo(

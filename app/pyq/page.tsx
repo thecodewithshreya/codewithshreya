@@ -1,28 +1,24 @@
 import type { Metadata } from "next";
-import { FileText, GraduationCap, Trophy } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, FileText, GraduationCap, Trophy } from "lucide-react";
 import { PyqPaperList } from "@/components/pyq-paper-list";
 import { PyqDownloadAll } from "@/components/pyq-download-all";
 import { getAllPyqPapers } from "@/lib/dynamic-content";
 import { staticPyqPapers } from "@/lib/pyq";
 
 export const metadata: Metadata = {
-  title: "Previous Year Questions",
-  description: "GATE and college-wise computer science previous year questions.",
+  title: "GATE CSE Previous Year Papers",
+  description: "GATE CSE previous year question papers from 2007 onwards, year by year, to view or download.",
+  alternates: { canonical: "/pyq" },
 };
 
 const gateCseBulkDownloadUrl =
   "https://drive.google.com/drive/folders/1lWK0cReQZRDslpG8VDN_piFkabwqMWCE?usp=sharing";
 
-const filters = [
-  ["GATE CSE", "21 PYQs"],
-  ["BARC PYQ", "Coming soon"],
-  ["Other CSE PYQ", "Coming soon"],
-];
-
 export const dynamic = "force-dynamic";
 
-export default async function PyqPage() {
-  const papers = await getAllPyqPapers(staticPyqPapers);
+export default async function PyqPage({ searchParams }: { searchParams: Promise<{ year?: string | string[] }> }) {
+  const [papers, { year }] = await Promise.all([getAllPyqPapers(staticPyqPapers), searchParams]);
 
   return (
     <>
@@ -32,18 +28,9 @@ export default async function PyqPage() {
           title="Practice real exam questions"
         />
         <div className="mb-8 flex flex-wrap gap-3">
-          {filters.map(([name, count], index) => (
-            <span
-              key={name}
-              className={`rounded-lg px-4 py-2 text-sm ${
-                index === 0
-                  ? "border border-violet-200 bg-violet-100 text-[#5f33d7] dark:border-violet-500/35 dark:bg-violet-500/15 dark:text-violet-200"
-                  : "border border-line bg-white/70 text-slate-500 dark:bg-[#111827] dark:text-gray-300"
-              }`}
-            >
-              {name} - {count}
-            </span>
-          ))}
+          <span className="rounded-lg border border-violet-200 bg-violet-100 px-4 py-2 text-sm text-[#5f33d7] dark:border-violet-500/35 dark:bg-violet-500/15 dark:text-violet-200">
+            GATE CSE - {papers.length} papers
+          </span>
         </div>
 
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -56,7 +43,9 @@ export default async function PyqPage() {
             bulkDownloadUrl={gateCseBulkDownloadUrl}
           />
         </div>
-        <PyqPaperList papers={papers} />
+        <div id="papers" className="scroll-mt-24">
+          <PyqPaperList papers={papers} initialYear={typeof year === "string" ? year : undefined} />
+        </div>
       </section>
 
       <section className="container-page py-16">
@@ -66,15 +55,17 @@ export default async function PyqPage() {
               <Trophy size={30} />
             </span>
             <div>
-              <p className="eyebrow">PYQ quiz mode</p>
+              <p className="eyebrow">Topic-wise practice</p>
               <h2 className="mt-2 text-2xl font-bold text-white">
-                Simulate the exam experience
+                Weak in a subject? Practise it first
               </h2>
               <p className="mt-2 text-gray-400">
-                Attempt timed questions, review explanations, and track your score.
+                Take the subject quizzes with explanations, then come back to the full papers.
               </p>
             </div>
-            <span className="button-secondary">Coming soon</span>
+            <Link href="/gate" className="button-secondary">
+              GATE preparation <ArrowRight size={16} />
+            </Link>
           </div>
         </div>
       </section>

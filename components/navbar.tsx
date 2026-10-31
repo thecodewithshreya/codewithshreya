@@ -7,8 +7,11 @@ import { Menu, Search, X } from "lucide-react";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
+// "Home" is the logo. GATE and Job prep lead, since they are the two reasons people visit.
 const links = [
-  { href: "/", label: "Home" },
+  { href: "/gate", label: "GATE" },
+  { href: "/interview-prep", label: "Job prep" },
+  { href: "/topics", label: "Subjects" },
   { href: "/blog", label: "Blog" },
   { href: "/videos", label: "Videos" },
   { href: "/quizzes", label: "Quizzes" },
@@ -16,6 +19,11 @@ const links = [
   { href: "/compiler", label: "Compiler" },
   { href: "/tools", label: "Tools" },
 ];
+
+// A section stays highlighted on its sub-pages, e.g. Blog on /blog/<slug>.
+function isActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -35,19 +43,21 @@ export function Navbar() {
               className="h-9 w-9 object-contain"
             />
           </span>
-          <span className="hidden text-xl font-bold text-slate-950 dark:text-white sm:inline">
+          {/* Hidden between lg and xl, where the full link row needs the room. */}
+          <span className="hidden text-xl font-bold text-slate-950 dark:text-white sm:inline lg:hidden xl:inline">
             Code with Shreya
           </span>
         </Link>
 
         <div className="hidden items-center gap-1 lg:flex">
           {links.map((link) => {
-            const active = pathname === link.href;
+            const active = isActive(pathname, link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`rounded-full px-3 py-2 text-sm transition ${
+                aria-current={active ? "page" : undefined}
+                className={`whitespace-nowrap rounded-full px-3 py-2 text-sm transition ${
                   active
                     ? "bg-violet-500/10 text-violet-300"
                     : "text-gray-400 hover:bg-white/[0.04] hover:text-white"
@@ -86,8 +96,8 @@ export function Navbar() {
               href={link.href}
               onClick={() => setOpen(false)}
               className={`rounded-lg px-4 py-3 text-sm ${
-                pathname === link.href
-                  ? "bg-gray-950 text-white"
+                isActive(pathname, link.href)
+                  ? "bg-gray-950 !text-white"
                   : "text-gray-300 hover:bg-white/[0.04]"
               }`}
             >

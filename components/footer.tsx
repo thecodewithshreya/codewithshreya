@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Github, Linkedin, Youtube } from "lucide-react";
+import { socialLinks } from "@/lib/social";
+
+const prepLinks = [
+  ["GATE CSE preparation", "/gate"],
+  ["Placement & interview prep", "/interview-prep"],
+  ["All subjects", "/topics"],
+  ["GATE previous papers", "/pyq"],
+];
 
 const productLinks = [
   ["Articles", "/blog"],
@@ -15,13 +22,13 @@ const productLinks = [
 const companyLinks = [
   ["About", "/about"],
   ["Contact", "/contact"],
-  ["Previous Papers", "/pyq"],
+  ["RSS feed", "/feed.xml"],
 ];
 
 export function Footer() {
   return (
     <footer className="border-t border-line bg-black/20">
-      <div className="container-page grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
+      <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <Link href="/" className="inline-flex items-center gap-2 font-bold">
             <Image
@@ -34,24 +41,29 @@ export function Footer() {
             CodeWith<span className="-ml-2 text-[#6d35c5]">Shreya</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-6 text-gray-400">
-            Practical computer science education for students who want to build strong fundamentals and real problem-solving skills.
+            Computer science for GATE CSE aspirants and future software engineers: clear explanations, lectures,
+            practice and real exam papers in one place.
           </p>
-          <div className="mt-5 flex gap-3">
-            {[Youtube, Github, Linkedin].map((Icon, index) => (
-              <span
-                key={index}
-                className="grid h-9 w-9 place-items-center rounded-lg border border-line text-gray-400"
-              >
-                <Icon size={17} />
-              </span>
-            ))}
-          </div>
-          <p className="mt-2 text-xs text-gray-500">
-            Social links coming soon
-          </p>
+          {socialLinks.length ? (
+            <div className="mt-5 flex gap-3">
+              {socialLinks.map(({ label, href, icon: Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-line text-gray-400 transition hover:border-violet-400 hover:text-violet-300"
+                >
+                  <Icon size={17} />
+                </a>
+              ))}
+            </div>
+          ) : null}
         </div>
+        <FooterColumn title="Prepare" links={prepLinks} />
         <FooterColumn title="Learn" links={productLinks} />
-        <FooterColumn title="Explore" links={companyLinks} />
+        <FooterColumn title="Site" links={companyLinks} />
       </div>
       <div className="border-t border-line">
         <div className="container-page flex flex-col gap-2 py-5 text-xs text-gray-500 sm:flex-row sm:justify-between">

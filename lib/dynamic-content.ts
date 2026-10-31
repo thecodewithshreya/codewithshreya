@@ -58,8 +58,10 @@ export type DynamicArticleDetail = ArticleSummary & {
   updatedAt: Date;
 };
 
+// Published articles only: catalogue entries with slug: null are planned
+// articles, kept in lib/data.ts as a writing list but not shown to readers.
 export async function getAllArticles(): Promise<ArticleSummary[]> {
-  return [...(await getDynamicArticles()), ...articles];
+  return [...(await getDynamicArticles()), ...articles.filter((article) => article.slug)];
 }
 
 export async function getAllVideos(): Promise<VideoSummary[]> {

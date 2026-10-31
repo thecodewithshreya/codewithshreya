@@ -39,6 +39,12 @@ Every content type (articles, videos, quizzes, PYQ papers) has two sources:
 
 `lib/dynamic-content.ts` merges them (`getAllArticles`, `getAllVideos`, …, dynamic items first). All DB reads go through `readDynamic(reader, fallback)`, which logs and returns the fallback on any error. That is how the site survives a missing DB. Pages that read dynamic content export `dynamic = "force-dynamic"`.
 
+`getAllArticles` returns published articles only; `slug: null` catalogue entries are a planned-writing list and are not shown.
+
+### Tracks and subjects
+
+The site serves two audiences: GATE CSE (`/gate`) and job/interview prep (`/interview-prep`). `lib/subjects.ts` defines both tracks and the subject list; each subject names its tracks, the article categories, video subjects (a video's `subject`, else its `topic`) and static quiz slugs that belong to it. `/topics` lists subjects and `/topics/[slug]` is a hub page built by `contentForSubject` over the merged content (`lib/site-content.ts`). A new article category or video subject must be added to a subject; `lib/subjects.test.ts` fails if published content has no subject. The home page and `/gate` show a question of the day (`lib/daily-question.ts`, chosen by India date from the static quiz bank). Social profile URLs live in `lib/social.ts`; empty ones are hidden.
+
 Site search (`/search?q=`, `lib/search.ts`) runs over these merged lists (title/category/excerpt etc., not full article bodies).
 
 ### Blog articles

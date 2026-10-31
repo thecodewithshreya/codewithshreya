@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { articles } from "@/lib/data";
 import { getDynamicSitemapEntries } from "@/lib/dynamic-content";
 import { staticQuizzes } from "@/lib/quizzes";
+import { subjects } from "@/lib/subjects";
 
 const baseUrl = "https://codewithshreya.com";
 
@@ -19,6 +20,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 1,
     },
+    ...["/gate", "/interview-prep", "/topics"].map((path) => ({
+      url: `${baseUrl}${path}`,
+      lastModified,
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    })),
+    ...subjects.map((subject) => ({
+      url: `${baseUrl}/topics/${subject.slug}`,
+      lastModified,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
     {
       url: `${baseUrl}/blog`,
       lastModified,

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Github, Linkedin, Mail, MessageCircle, Youtube } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
+import { socialLinks } from "@/lib/social";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -14,7 +15,7 @@ export default function ContactPage() {
           <p className="eyebrow">Contact</p>
           <h1 className="mt-2 text-3xl font-black text-white">Get in touch</h1>
         </div>
-        <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
+        <div className={`mx-auto grid max-w-4xl gap-6 ${socialLinks.length ? "md:grid-cols-2" : ""}`}>
           <div className="card p-7">
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-indigo-500/10 text-indigo-400">
               <Mail size={23} />
@@ -27,6 +28,7 @@ export default function ContactPage() {
               thecodewithshreya@gmail.com
             </a>
           </div>
+          {socialLinks.length ? (
           <div className="card p-7">
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-purple-500/10 text-purple-400">
               <MessageCircle size={23} />
@@ -36,14 +38,21 @@ export default function ContactPage() {
               Follow new lessons, videos, and platform updates.
             </p>
             <div className="mt-5 flex gap-3">
-              {[Youtube, Github, Linkedin].map((Icon, index) => (
-                <span key={index} className="grid h-10 w-10 place-items-center rounded-lg border border-line text-gray-400">
+              {socialLinks.map(({ label, href, icon: Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="grid h-10 w-10 place-items-center rounded-lg border border-line text-gray-400 transition hover:border-violet-400 hover:text-violet-300"
+                >
                   <Icon size={18} />
-                </span>
+                </a>
               ))}
             </div>
-            <p className="mt-3 text-xs text-gray-500">Social links coming soon</p>
           </div>
+          ) : null}
         </div>
         <div className="mx-auto mt-8 max-w-4xl rounded-xl border border-indigo-500/20 bg-indigo-500/[0.06] p-5 text-center text-sm text-gray-400">
           We typically respond to emails within 2-3 working days.
