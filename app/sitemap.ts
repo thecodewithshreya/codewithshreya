@@ -1,10 +1,16 @@
 import type { MetadataRoute } from "next";
 import { articles } from "@/lib/data";
+import { getDynamicSitemapEntries } from "@/lib/dynamic-content";
+import { staticQuizzes } from "@/lib/quizzes";
 
 const baseUrl = "https://codewithshreya.com";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+// Regenerate hourly so articles and quizzes added from the admin page are picked up.
+export const revalidate = 3600;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
+  const dynamicEntries = await getDynamicSitemapEntries();
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {
@@ -66,5 +72,32 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     }));
 
-  return [...staticRoutes, ...articleRoutes];
+  const quizRoutes: MetadataRoute.Sitemap = staticQuizzes.map((quiz) => ({
+    url: `${baseUrl}/quizzes/${quiz.slug}`,
+    lastModified,
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
+  const dynamicArticleRoutes: MetadataRoute.Sitemap = dynamicEntries.articles.map((article) => ({
+    url: `${baseUrl}/blog/${article.slug}`,
+    lastModified: article.updatedAt,
+    changeFrequency: "monthly",
+    priority: 0.8,
+  }));
+
+  const dynamicQuizRoutes: MetadataRoute.Sitemap = dynamicEntries.quizzes.map((quiz) => ({
+    url: `${baseUrl}/quizzes/${quiz.slug}`,
+    lastModified: quiz.updatedAt,
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
+  return [
+    ...staticRoutes,
+    ...articleRoutes,
+    ...dynamicArticleRoutes,
+    ...quizRoutes,
+    ...dynamicQuizRoutes,
+  ];
 }

@@ -1,4 +1,8 @@
 import type { ReactNode } from "react";
+import { ArticleQuiz } from "@/components/mdx/article-quiz";
+import { CodeBlock } from "@/components/code-block";
+import { headingId, plainHeading } from "@/lib/headings";
+import { parseQuizText, type QuizQuestion } from "@/lib/quiz-format";
 
 type DynamicArticleContentProps = {
   content: string;
@@ -10,7 +14,10 @@ type ParsedBlock =
   | { type: "list"; ordered: boolean; items: string[] }
   | { type: "table"; headers: string[]; rows: string[][] }
   | { type: "quote"; text: string }
-  | { type: "code"; code: string };
+  | { type: "code"; code: string }
+  | { type: "image"; alt: string; src: string }
+  | { type: "quiz"; questions: QuizQuestion[] }
+  | { type: "notice"; text: string };
 
 export function DynamicArticleContent({ content }: DynamicArticleContentProps) {
   const blocks = parseMarkdown(content);
@@ -19,8 +26,15 @@ export function DynamicArticleContent({ content }: DynamicArticleContentProps) {
     <>
       {blocks.map((block, index) => {
         if (block.type === "heading") {
-          const Heading = block.level === 2 ? "h2" : "h3";
-          return <Heading key={index}>{renderInline(block.text)}</Heading>;
+          if (block.level === 2) {
+            // Same id as extractHeadings, so the table of contents can link here.
+            return (
+              <h2 key={index} id={headingId(plainHeading(block.text)) || undefined}>
+                {renderInline(block.text)}
+              </h2>
+            );
+          }
+          return <h3 key={index}>{renderInline(block.text)}</h3>;
         }
 
         if (block.type === "list") {
@@ -67,11 +81,41 @@ export function DynamicArticleContent({ content }: DynamicArticleContentProps) {
           );
         }
 
+        if (block.type === "image") {
+          return (
+            <figure key={index} className="my-8">
+              <img src={block.src} alt={block.alt} loading="lazy" className="rounded-2xl border border-line" />
+              {block.alt ? (
+                <figcaption className="mt-2 text-center text-sm text-gray-500">{block.alt}</figcaption>
+              ) : null}
+            </figure>
+          );
+        }
+
+        if (block.type === "quiz") {
+          return block.questions.map((question, questionIndex) => (
+            <ArticleQuiz
+              key={`${index}-${questionIndex}`}
+              question={question.question}
+              options={question.options}
+              answer={question.options[question.answer]}
+            />
+          ));
+        }
+
+        if (block.type === "notice") {
+          return (
+            <p key={index} className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+              {block.text}
+            </p>
+          );
+        }
+
         if (block.type === "code") {
           return (
-            <pre key={index}>
+            <CodeBlock key={index}>
               <code>{block.code}</code>
-            </pre>
+            </CodeBlock>
           );
         }
 
@@ -89,7 +133,25 @@ function parseMarkdown(content: string): ParsedBlock[] {
   let orderedList = false;
   let tableRows: string[][] = [];
   let codeLines: string[] = [];
+  let codeLanguage = "";
   let inCode = false;
+
+  // A ```quiz fence holds questions in the admin quiz text format.
+  function pushCode() {
+    if (codeLanguage !== "quiz") {
+      blocks.push({ type: "code", code: codeLines.join("\n") });
+      return;
+    }
+
+    try {
+      blocks.push({ type: "quiz", questions: parseQuizText(codeLines.join("\n")) });
+    } catch (error) {
+      blocks.push({
+        type: "notice",
+        text: `Quiz block error: ${error instanceof Error ? error.message : "invalid quiz"}`,
+      });
+    }
+  }
 
   function flushParagraph() {
     const text = paragraph.join(" ").replace(/\s+/g, " ").trim();
@@ -128,13 +190,14 @@ function parseMarkdown(content: string): ParsedBlock[] {
 
     if (line.startsWith("```")) {
       if (inCode) {
-        blocks.push({ type: "code", code: codeLines.join("\n") });
+        pushCode();
         codeLines = [];
         inCode = false;
       } else {
         flushParagraph();
         flushList();
         flushTable();
+        codeLanguage = line.slice(3).trim().toLowerCase();
         inCode = true;
       }
       continue;
@@ -158,6 +221,16 @@ function parseMarkdown(content: string): ParsedBlock[] {
       if (!isMarkdownTableSeparator(line)) {
         tableRows.push(splitTableRow(line));
       }
+      continue;
+    }
+
+    const image = /^!\[([^\]]*)\]\(([^)\s]+)\)$/.exec(line);
+    if (image) {
+      flushParagraph();
+      flushList();
+      flushTable();
+      const src = safeUrl(image[2]);
+      if (src) blocks.push({ type: "image", alt: image[1].trim(), src });
       continue;
     }
 
@@ -203,7 +276,7 @@ function parseMarkdown(content: string): ParsedBlock[] {
   }
 
   if (inCode) {
-    blocks.push({ type: "code", code: codeLines.join("\n") });
+    pushCode();
   }
 
   flushParagraph();
@@ -264,12 +337,15 @@ function renderInline(text: string): ReactNode[] {
       nodes.push(<code key={key}>{token.slice(1, -1)}</code>);
     } else {
       const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(token);
-      if (link) {
+      const href = link ? safeUrl(link[2]) : null;
+      if (link && href) {
         nodes.push(
-          <a key={key} href={link[2]} target="_blank" rel="noreferrer">
+          <a key={key} href={href} target="_blank" rel="noreferrer">
             {link[1]}
           </a>,
         );
+      } else if (link) {
+        nodes.push(link[1]);
       }
     }
 
@@ -281,4 +357,11 @@ function renderInline(text: string): ReactNode[] {
   }
 
   return nodes;
+}
+
+// Allows only web, site-relative, anchor and mailto URLs, which blocks javascript: and data: links.
+function safeUrl(url: string) {
+  const trimmed = url.trim();
+  if (/^(https?:\/\/|\/(?!\/)|#|mailto:)/i.test(trimmed)) return trimmed;
+  return null;
 }

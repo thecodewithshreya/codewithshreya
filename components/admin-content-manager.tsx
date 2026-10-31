@@ -1,10 +1,13 @@
 "use client";
 
-import { AlertCircle, BookOpenText, CheckCircle2, FileQuestion, GraduationCap, LogOut, Pencil, PlayCircle, Trash2, X } from "lucide-react";
+import { AlertCircle, BookOpenText, CheckCircle2, FileQuestion, GraduationCap, History, LogOut, Pencil, PlayCircle, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
+import { DynamicArticleContent } from "@/components/dynamic-article-content";
+import { clearDraft, draftKey, readDraft, saveDraft, type AdminDraft } from "@/lib/admin-drafts";
 import type { getAdminContent } from "@/lib/dynamic-content";
+import { formatQuizText, quizTextExample } from "@/lib/quiz-format";
 
 type AdminContent = Awaited<ReturnType<typeof getAdminContent>>;
 type ContentType = "article" | "video" | "quiz" | "pyq";
@@ -59,7 +62,20 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
   const [saving, setSaving] = useState(false);
   const [editItem, setEditItem] = useState<EditableContent | null>(null);
   const [formKey, setFormKey] = useState(0);
+  const [restored, setRestored] = useState<{ key: string; draft: AdminDraft } | null>(null);
   const editing = editItem?.type === activeType ? editItem : null;
+  const currentDraftKey = draftKey(activeType, editing?.id);
+  // Matched by key: on a tab switch the form remounts before the effect below
+  // runs, and must not start from the previous form's draft.
+  const restoredDraft = restored?.key === currentDraftKey ? restored.draft : null;
+
+  // Bring back what was typed into this form before a reload or tab switch.
+  // The form remounts so every field, including the article editor, starts from it.
+  useEffect(() => {
+    const draft = readDraft(currentDraftKey);
+    setRestored(draft ? { key: currentDraftKey, draft } : null);
+    if (draft) setFormKey((value) => value + 1);
+  }, [currentDraftKey]);
 
   useEffect(() => {
     const savedMessage = sessionStorage.getItem(saveMessageKey);
@@ -111,6 +127,8 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
     const successMessage = `${activeLabel} ${editing ? "updated" : "saved"} successfully. Public pages are updated.`;
 
     form.reset();
+    clearDraft(draftKey(activeType, editing?.id));
+    setRestored(null);
     setEditItem(null);
     setFormKey((value) => value + 1);
     sessionStorage.setItem(saveMessageKey, successMessage);
@@ -129,6 +147,7 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
   }
 
   function cancelEdit() {
+    clearDraft(currentDraftKey);
     setEditItem(null);
     setMessage("");
     setError("");
@@ -156,6 +175,8 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
       return;
     }
 
+    clearDraft(draftKey(item.type, item.id));
+
     if (editItem?.id === item.id) {
       setEditItem(null);
       setFormKey((value) => value + 1);
@@ -168,10 +189,19 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
     router.refresh();
   }
 
+  function discardDraft() {
+    clearDraft(currentDraftKey);
+    setRestored(null);
+    setFormKey((value) => value + 1);
+  }
+
   async function logout() {
     await fetch("/api/admin/logout", { method: "POST" });
     router.refresh();
   }
+
+  const formStart = restoredDraft?.values ?? editing?.values;
+  const activeLabel = contentTypes.find((item) => item.id === activeType)?.label ?? "Content";
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -193,7 +223,7 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
                   }}
                   className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                     active
-                      ? "border-violet-500 bg-violet-600 text-white shadow-lg shadow-violet-950/20"
+                      ? "border-violet-500 bg-violet-600 !text-white shadow-lg shadow-violet-950/20"
                       : "border-line bg-white/80 text-slate-600 hover:border-violet-400 dark:bg-white/[0.04] dark:text-gray-300"
                   }`}
                 >
@@ -212,6 +242,15 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
             Logout
           </button>
         </div>
+
+        {content.unavailable.includes(activeType) ? (
+          <div className="mt-5">
+            <StatusBanner
+              tone="error"
+              message={`Existing ${activeLabel.toLowerCase()} items could not be loaded from the database, so saving may fail too. If the schema changed recently, run npm run db:deploy. The server log has the details.`}
+            />
+          </div>
+        ) : null}
 
         <div className="mt-5" aria-live="polite" aria-atomic="true">
           {message ? <StatusBanner tone="success" message={message} /> : null}
@@ -235,11 +274,34 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
           </div>
         ) : null}
 
-        <form key={`${activeType}-${formKey}`} onSubmit={submitContent} className="mt-6 grid gap-4">
-          {activeType === "article" ? <ArticleFields values={editing?.values} /> : null}
-          {activeType === "video" ? <VideoFields values={editing?.values} /> : null}
-          {activeType === "quiz" ? <QuizFields values={editing?.values} /> : null}
-          {activeType === "pyq" ? <PyqFields values={editing?.values} /> : null}
+        {restoredDraft ? (
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+            <p className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-300">
+              <History size={16} className="shrink-0 text-amber-500" />
+              Restored your unsaved draft from{" "}
+              {new Date(restoredDraft.savedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.
+            </p>
+            <button
+              type="button"
+              onClick={discardDraft}
+              className="inline-flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-sm font-semibold text-slate-600 hover:border-rose-400 hover:text-rose-500 dark:text-gray-300"
+            >
+              <Trash2 size={16} />
+              Discard draft
+            </button>
+          </div>
+        ) : null}
+
+        <form
+          key={`${activeType}-${formKey}`}
+          onSubmit={submitContent}
+          onInput={(event) => saveDraft(currentDraftKey, formValues(event.currentTarget))}
+          className="mt-6 grid gap-4"
+        >
+          {activeType === "article" ? <ArticleFields values={formStart} /> : null}
+          {activeType === "video" ? <VideoFields values={formStart} /> : null}
+          {activeType === "quiz" ? <QuizFields values={formStart} /> : null}
+          {activeType === "pyq" ? <PyqFields values={formStart} /> : null}
 
           <button type="submit" className="button-primary w-full sm:w-fit" disabled={saving}>
             {saving
@@ -252,10 +314,10 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
       <aside className="card p-5">
         <p className="eyebrow">Database content</p>
         <div className="mt-4 grid gap-3">
-          <AdminCount label="Blogs" value={content.articles.length} />
-          <AdminCount label="Videos" value={content.videos.length} />
-          <AdminCount label="Quizzes" value={content.quizzes.length} />
-          <AdminCount label="PYQs" value={content.pyqs.length} />
+          <AdminCount label="Blogs" value={content.unavailable.includes("article") ? null : content.articles.length} />
+          <AdminCount label="Videos" value={content.unavailable.includes("video") ? null : content.videos.length} />
+          <AdminCount label="Quizzes" value={content.unavailable.includes("quiz") ? null : content.quizzes.length} />
+          <AdminCount label="PYQs" value={content.unavailable.includes("pyq") ? null : content.pyqs.length} />
         </div>
         <p className="mt-5 text-sm leading-6 text-slate-500 dark:text-gray-400">
           Static content stays in code. New admin content is stored in Neon/Postgres
@@ -270,6 +332,12 @@ export function AdminContentManager({ content }: { content: AdminContent }) {
         />
       </aside>
     </div>
+  );
+}
+
+function formValues(form: HTMLFormElement): FormValues {
+  return Object.fromEntries(
+    [...new FormData(form).entries()].filter((entry): entry is [string, string] => typeof entry[1] === "string"),
   );
 }
 
@@ -307,8 +375,88 @@ function ArticleFields({ values }: { values?: FormValues }) {
       <Field name="excerpt" label="Short excerpt" defaultValue={values?.excerpt} required />
       <Field name="readTime" label="Read time" placeholder="8 min read" defaultValue={values?.readTime} />
       <Select name="color" label="Gradient color" options={articleGradientOptions} defaultValue={values?.color} />
-      <TextArea name="content" label="Blog content" rows={12} defaultValue={values?.content} required />
+      <ArticleContentEditor defaultValue={values?.content} />
     </>
+  );
+}
+
+const articleSyntaxHelp = [
+  ["## Heading", "Section heading (### for a smaller one)"],
+  ["**bold**, `code`, [text](https://…)", "Inline formatting and links"],
+  ["- item  /  1. item", "Bulleted or numbered list"],
+  ["> text", "Callout quote"],
+  ["| A | B |", "Table (first row is the header)"],
+  ["![caption](https://…/image.png)", "Image on its own line"],
+  ["```quiz … ```", "Quick-check questions, same format as quizzes"],
+  ["``` … ```", "Code block"],
+] as const;
+
+function ArticleContentEditor({ defaultValue }: { defaultValue?: string }) {
+  const [content, setContent] = useState(defaultValue ?? "");
+  const [mode, setMode] = useState<"write" | "preview">("write");
+
+  return (
+    <div className="text-sm font-semibold text-slate-700 dark:text-gray-300">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span>Blog content</span>
+        <div className="inline-flex rounded-xl border border-line p-1" role="tablist" aria-label="Editor mode">
+          {(["write", "preview"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              role="tab"
+              aria-selected={mode === value}
+              onClick={() => setMode(value)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition ${
+                mode === value
+                  ? "bg-violet-600 !text-white"
+                  : "text-slate-500 hover:text-violet-500 dark:text-gray-400"
+              }`}
+            >
+              {value}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <textarea
+        name="content"
+        rows={18}
+        value={content}
+        onChange={(event) => setContent(event.target.value)}
+        onInvalid={() => setMode("write")}
+        required
+        aria-label="Blog content"
+        hidden={mode !== "write"}
+        className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 font-mono text-[13px] font-normal leading-6 text-slate-950 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 dark:bg-white/[0.04] dark:text-white"
+      />
+
+      {mode === "preview" ? (
+        <div className="mt-2 max-h-[38rem] overflow-y-auto rounded-xl border border-line bg-white/70 px-5 py-4 font-normal dark:bg-white/[0.03]">
+          {content.trim() ? (
+            <div className="article-content">
+              <DynamicArticleContent content={content} />
+            </div>
+          ) : (
+            <p className="text-slate-500 dark:text-gray-400">Nothing to preview yet.</p>
+          )}
+        </div>
+      ) : null}
+
+      <details className="mt-2 text-xs font-normal text-slate-500 dark:text-gray-400">
+        <summary className="cursor-pointer font-semibold">Formatting help</summary>
+        <dl className="mt-2 grid gap-1.5 sm:grid-cols-[minmax(0,16rem)_1fr]">
+          {articleSyntaxHelp.map(([syntax, meaning]) => (
+            <div key={syntax} className="contents">
+              <dt>
+                <code>{syntax}</code>
+              </dt>
+              <dd>{meaning}</dd>
+            </div>
+          ))}
+        </dl>
+      </details>
+    </div>
   );
 }
 
@@ -333,9 +481,21 @@ function QuizFields({ values }: { values?: FormValues }) {
     <>
       <Field name="title" label="Quiz title" defaultValue={values?.title} required />
       <Field name="topic" label="Topic" placeholder="TCP / IP / DNS" defaultValue={values?.topic} required />
-      <Field name="questions" label="Question count" type="number" placeholder="15" defaultValue={values?.questions} />
       <Select name="level" label="Level" options={["Beginner", "Intermediate", "Advanced"]} defaultValue={values?.level} />
       <Field name="tags" label="Tags" placeholder="TCP, IP, DNS" defaultValue={values?.tags} />
+      <TextArea
+        name="items"
+        label="Questions"
+        rows={16}
+        placeholder={quizTextExample}
+        defaultValue={values?.items}
+        required
+      />
+      <p className="-mt-2 text-xs leading-5 text-slate-500 dark:text-gray-400">
+        Separate questions with a blank line. Start the question with <code>Q:</code>, wrong options with{" "}
+        <code>-</code>, the one correct option with <code>*</code>, an optional explanation with <code>&gt;</code>{" "}
+        and an optional source such as &quot;GATE CSE 2019&quot; with <code>@</code>.
+      </p>
     </>
   );
 }
@@ -386,12 +546,14 @@ function TextArea({
   name,
   label,
   rows,
+  placeholder,
   defaultValue,
   required,
 }: {
   name: string;
   label: string;
   rows: number;
+  placeholder?: string;
   defaultValue?: string;
   required?: boolean;
 }) {
@@ -401,6 +563,7 @@ function TextArea({
       <textarea
         name={name}
         rows={rows}
+        placeholder={placeholder}
         defaultValue={defaultValue}
         required={required}
         className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 dark:bg-white/[0.04] dark:text-white"
@@ -471,7 +634,9 @@ function ManagedContentList({
       <div className="mt-4 grid gap-3">
         {items.length === 0 ? (
           <p className="rounded-xl border border-dashed border-line p-4 text-sm text-slate-500 dark:text-gray-400">
-            No admin-created {activeLabel.toLowerCase()} items yet.
+            {content.unavailable.includes(activeType)
+              ? `Could not load ${activeLabel.toLowerCase()} items.`
+              : `No admin-created ${activeLabel.toLowerCase()} items yet.`}
           </p>
         ) : (
           items.map((item) => (
@@ -564,9 +729,9 @@ function getEditableItems(content: AdminContent, type: ContentType): EditableCon
         values: {
           title: quiz.title,
           topic: quiz.topic,
-          questions: String(quiz.questions),
           level: quiz.level,
           tags: quiz.tags?.join(", ") ?? "",
+          items: formatQuizText(quiz.items),
         },
       }));
   }
@@ -588,10 +753,13 @@ function getEditableItems(content: AdminContent, type: ContentType): EditableCon
     }));
 }
 
-function AdminCount({ label, value }: { label: string; value: number }) {
+// null = the table could not be read.
+function AdminCount({ label, value }: { label: string; value: number | null }) {
   return (
     <div className="rounded-xl border border-line bg-white/70 p-4 dark:bg-white/[0.035]">
-      <div className="text-2xl font-black text-slate-950 dark:text-white">{value}</div>
+      <div className="text-2xl font-black text-slate-950 dark:text-white">
+        {value ?? <span title="Could not be loaded" aria-label="Could not be loaded">–</span>}
+      </div>
       <p className="mt-1 text-sm text-slate-500 dark:text-gray-400">{label}</p>
     </div>
   );

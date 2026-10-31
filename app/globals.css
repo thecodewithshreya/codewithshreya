@@ -1,4 +1,11 @@
 @tailwind base;
+
+/* Visible keyboard focus everywhere. Placed before the utilities layer: with equal
+   specificity, utilities such as outline-none plus a focus ring win. */
+:where(a[href], button, summary, select, [role="tab"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
 @tailwind components;
 @tailwind utilities;
 
@@ -69,7 +76,9 @@ body {
   }
 
   .button-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold shadow-lg transition hover:-translate-y-0.5;
+    /* Plain color, not @apply text-white: @apply would also copy the html.light .text-white override. */
+    color: #ffffff;
     background: #6d35c5;
     box-shadow: 0 18px 38px rgb(109 53 197 / 0.24);
   }
@@ -1371,6 +1380,11 @@ html.light .floating-cube {
   padding-left: 0.25rem;
 }
 
+/* Table-of-contents jumps land below the sticky navbar. */
+.article-content h2[id] {
+  scroll-margin-top: 6rem;
+}
+
 .article-content :not(pre) > code {
   border: 1px solid rgb(var(--color-line));
   border-radius: 0.375rem;
@@ -1389,6 +1403,38 @@ html.light .floating-cube {
   color: #e5e7eb;
   font-size: 0.875rem;
   line-height: 1.75;
+}
+
+/* Copy button for article code (components/code-block.tsx). It overlays the
+   block's top-right corner, so the code gets extra right padding. */
+.code-block {
+  position: relative;
+}
+
+.code-block pre {
+  padding-right: 6rem;
+}
+
+.code-copy {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid #2a3350;
+  border-radius: 0.5rem;
+  background: #111827;
+  padding: 0.3rem 0.6rem;
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: color 150ms, border-color 150ms;
+}
+
+.code-copy:hover {
+  border-color: #8b5cf6;
+  color: #ffffff;
 }
 
 .article-content img {
@@ -1437,4 +1483,68 @@ html.light .article-content a {
 
 html.light .article-content :not(pre) > code {
   color: #4338ca;
+}
+
+/* Inline code inside titles on cards and headings (see components/title-text.tsx). */
+.title-code {
+  border-radius: 0.3em;
+  background: rgb(var(--color-panel));
+  padding: 0.05em 0.3em;
+  color: #c7d2fe;
+  font-size: 0.92em;
+}
+
+html.light .title-code {
+  color: #4338ca;
+}
+
+/* The compiler has its own dark/light switch. When the site is light but the
+   compiler is dark, restore the dark palette inside it so the legacy
+   light-mode mappings above do not put dark text on the dark editor. */
+html.light .compiler-dark {
+  --color-ink: 7 10 18;
+  --color-panel: 14 19 34;
+  --color-line: 32 40 59;
+  color: #f3f4f6;
+}
+
+html.light .compiler-dark .text-white,
+html.light .compiler-dark .hover\:text-white:hover {
+  color: #ffffff;
+}
+
+html.light .compiler-dark .text-gray-200 {
+  color: #e5e7eb;
+}
+
+html.light .compiler-dark .text-gray-300 {
+  color: #d1d5db;
+}
+
+html.light .compiler-dark .text-gray-400 {
+  color: #9ca3af;
+}
+
+html.light .compiler-dark .text-gray-500 {
+  color: #9ca3af;
+}
+
+html.light .compiler-dark .bg-black\/20 {
+  background-color: rgb(0 0 0 / 0.2);
+}
+
+html.light .compiler-dark .bg-white\/\[0\.04\] {
+  background-color: rgb(255 255 255 / 0.04);
+}
+
+html.light .compiler-dark .button-secondary {
+  background-color: rgb(255 255 255 / 0.03);
+  color: #e5e7eb;
+}
+
+/* The reverse case: the compiler's light mode while the site is dark. */
+.compiler-light .button-secondary {
+  border-color: rgb(203 213 225);
+  background-color: #ffffff;
+  color: #1f2937;
 }

@@ -34,7 +34,7 @@ export function BlogFilterList({ articles }: { articles: Article[] }) {
             onClick={() => setActiveFilter(filter)}
             className={`rounded-full px-4 py-2 text-sm transition ${
               activeFilter === filter
-                ? "bg-indigo-600 text-white"
+                ? "bg-indigo-600 !text-white"
                 : "border border-line text-gray-400 hover:border-indigo-500/60 hover:text-white"
             }`}
           >
@@ -43,6 +43,7 @@ export function BlogFilterList({ articles }: { articles: Article[] }) {
         ))}
       </div>
 
+      <h2 className="sr-only">{activeFilter}</h2>
       <StaggerReveal className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredArticles.map((article) => (
           <ArticleCard key={article.title} article={article} />

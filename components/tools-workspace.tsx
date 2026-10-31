@@ -87,7 +87,7 @@ function JsonFormatter() {
 
   return (
     <ToolShell title="JSON Formatter" result={result.error || result.output} error={result.error}>
-      <ToolTextarea value={input} onChange={setInput} />
+      <ToolTextarea label="JSON input" value={input} onChange={setInput} />
     </ToolShell>
   );
 }
@@ -107,7 +107,7 @@ function CodeFormatter() {
 
   return (
     <ToolShell title="Code Formatter" result={output}>
-      <ToolTextarea value={input} onChange={setInput} />
+      <ToolTextarea label="Code to format" value={input} onChange={setInput} />
     </ToolShell>
   );
 }
@@ -124,8 +124,18 @@ function NumberConverter() {
   return (
     <ToolShell title="Number Converter" result={result} error={!valid ? result : ""}>
       <div className="grid gap-3 sm:grid-cols-[1fr_160px]">
-        <input className="tool-input" value={value} onChange={(event) => setValue(event.target.value)} />
-        <select className="tool-input" value={base} onChange={(event) => setBase(event.target.value)}>
+        <input
+          className="tool-input"
+          aria-label="Number to convert"
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+        />
+        <select
+          className="tool-input"
+          aria-label="Input base"
+          value={base}
+          onChange={(event) => setBase(event.target.value)}
+        >
           <option value="10">Decimal</option>
           <option value="2">Binary</option>
           <option value="8">Octal</option>
@@ -151,8 +161,13 @@ function RegexTester() {
 
   return (
     <ToolShell title="Regex Tester" result={result}>
-      <input className="tool-input mb-3" value={pattern} onChange={(event) => setPattern(event.target.value)} />
-      <ToolTextarea value={text} onChange={setText} />
+      <input
+        className="tool-input mb-3"
+        aria-label="Regular expression"
+        value={pattern}
+        onChange={(event) => setPattern(event.target.value)}
+      />
+      <ToolTextarea label="Text to test" value={text} onChange={setText} />
     </ToolShell>
   );
 }
@@ -172,9 +187,24 @@ function BaseCalculator() {
   return (
     <ToolShell title="Base Calculator" result={result} error={!valid ? result : ""}>
       <div className="grid gap-3 sm:grid-cols-3">
-        <input className="tool-input" value={left} onChange={(event) => setLeft(event.target.value)} />
-        <input className="tool-input" value={right} onChange={(event) => setRight(event.target.value)} />
-        <select className="tool-input" value={base} onChange={(event) => setBase(event.target.value)}>
+        <input
+          className="tool-input"
+          aria-label="First number"
+          value={left}
+          onChange={(event) => setLeft(event.target.value)}
+        />
+        <input
+          className="tool-input"
+          aria-label="Second number"
+          value={right}
+          onChange={(event) => setRight(event.target.value)}
+        />
+        <select
+          className="tool-input"
+          aria-label="Number base"
+          value={base}
+          onChange={(event) => setBase(event.target.value)}
+        >
           <option value="2">Base 2</option>
           <option value="8">Base 8</option>
           <option value="10">Base 10</option>
@@ -438,20 +468,29 @@ function ToolShell({
     <div>
       <h2 className="text-2xl font-bold text-white">{title}</h2>
       <div className="mt-4">{children}</div>
-      <pre className={`tool-output mt-4 ${error ? "tool-output-error" : ""}`}>{result}</pre>
+      <pre
+        className={`tool-output mt-4 ${error ? "tool-output-error" : ""}`}
+        aria-label={`${title} result`}
+        aria-live="polite"
+      >
+        {result}
+      </pre>
     </div>
   );
 }
 
 function ToolTextarea({
+  label,
   value,
   onChange,
 }: {
+  label?: string;
   value: string;
   onChange: (value: string) => void;
 }) {
   return (
     <textarea
+      aria-label={label}
       className="tool-input min-h-32 resize-y font-mono text-sm"
       value={value}
       onChange={(event) => onChange(event.target.value)}

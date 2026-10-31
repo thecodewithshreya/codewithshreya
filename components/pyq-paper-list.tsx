@@ -56,7 +56,7 @@ export function PyqPaperList({ papers }: { papers: PyqPaper[] }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div
           ref={yearDropdownRef}
-          className="relative inline-flex w-36 rounded-md border border-slate-300 bg-white px-4 pb-2 pt-3 shadow-sm dark:border-line dark:!bg-[#111827]"
+          className="relative inline-flex w-36 rounded-md border border-slate-300 bg-white px-4 pb-2 pt-3 shadow-sm focus-within:ring-2 focus-within:ring-violet-500/60 dark:border-line dark:!bg-[#111827]"
         >
           <span className="absolute -top-2 left-3 bg-[#f7f8fc] px-1.5 text-[11px] font-semibold text-slate-600 dark:bg-[#070a12] dark:text-gray-300">
             Year
@@ -100,7 +100,7 @@ export function PyqPaperList({ papers }: { papers: PyqPaper[] }) {
                   }}
                   className={`block w-full px-4 py-2 text-left text-base transition ${
                     active
-                      ? "bg-slate-600 text-white dark:bg-violet-600"
+                      ? "bg-slate-600 !text-white dark:bg-violet-600"
                       : "text-slate-950 hover:bg-slate-100 dark:text-white dark:hover:bg-white/[0.07]"
                   }`}
                   role="option"

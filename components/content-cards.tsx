@@ -1,8 +1,11 @@
 import { ArrowRight, Clock, FileQuestion, Layers3 } from "lucide-react";
 import Link from "next/link";
 import type { ElementType } from "react";
+import { ArticleReadBadge, QuizBestBadge } from "./progress-badges";
 import { PyqCardActions } from "./pyq-card-actions";
 import { VideoEmbedPreview } from "./video-embed-preview";
+import { TitleText } from "./title-text";
+import { categoryLabel, plainTitle } from "@/lib/title";
 
 type Article = {
   category: string;
@@ -14,20 +17,21 @@ type Article = {
 };
 
 export function ArticleCard({ article }: { article: Article }) {
-  const categoryLabel = article.category === "DotNet" ? ".NET" : article.category;
+  const label = categoryLabel(article.category);
 
   return (
     <article className={`card h-full overflow-hidden ${article.slug ? "card-hover" : ""}`}>
-      <div className={`h-20 bg-gradient-to-br ${article.color} p-4`}>
+      <div className={`flex h-20 items-start justify-between gap-2 bg-gradient-to-br ${article.color} p-4`}>
         <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-gray-200">
-          {categoryLabel}
+          {label}
         </span>
+        {article.slug ? <ArticleReadBadge slug={article.slug} /> : null}
       </div>
       <div className="p-4">
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <Clock size={13} /> {article.date}
         </div>
-        <h3 className="mt-3 text-base font-semibold leading-snug">{article.title}</h3>
+        <h3 className="mt-3 text-base font-semibold leading-snug"><TitleText title={article.title} /></h3>
         <p className="mt-2 text-sm leading-6 text-gray-400">{article.excerpt}</p>
         {article.slug ? (
           <Link
@@ -77,7 +81,7 @@ export function VideoCard({ video }: { video: Video }) {
     <article className="card group h-full overflow-hidden">
       <div className="relative grid aspect-video place-items-center overflow-hidden bg-[#20232c]">
         <VideoEmbedPreview
-          title={video.title}
+          title={plainTitle(video.title)}
           youtubeId={video.youtubeId}
           embedUrl={embedUrl}
           color={video.color}
@@ -93,7 +97,7 @@ export function VideoCard({ video }: { video: Video }) {
             <Clock size={15} /> {video.duration}
           </span>
         </div>
-        <h3 className="mt-4 text-lg font-bold leading-snug">{video.title}</h3>
+        <h3 className="mt-4 text-lg font-bold leading-snug"><TitleText title={video.title} /></h3>
         <p className="mt-3 text-sm leading-6 text-gray-400">
           {video.description ?? `Focused ${video.topic} lesson with visual examples and practice notes.`}
         </p>
@@ -117,6 +121,7 @@ export function VideoCard({ video }: { video: Video }) {
 }
 
 type Quiz = {
+  slug?: string;
   title: string;
   topic: string;
   questions: number;
@@ -138,8 +143,10 @@ export function QuizCard({ quiz }: { quiz: Quiz }) {
         ? "border-amber-500/25 hover:border-amber-400/60"
         : "border-emerald-500/25 hover:border-emerald-400/60";
 
-  return (
-    <article className={`card h-full p-4 ${accent}`}>
+  const playable = Boolean(quiz.slug) && quiz.questions > 0;
+
+  const card = (
+    <article className={`card h-full p-4 ${accent} ${playable ? "card-hover" : ""}`}>
       <div className="flex items-start justify-between">
         <span className="grid h-11 w-11 place-items-center rounded-lg bg-rose-500/10 text-rose-300">
           <FileQuestion size={20} />
@@ -148,9 +155,14 @@ export function QuizCard({ quiz }: { quiz: Quiz }) {
           {quiz.level}
         </span>
       </div>
-      <h3 className="mt-5 text-lg font-bold leading-snug">{quiz.title}</h3>
+      <h3 className="mt-5 text-lg font-bold leading-snug"><TitleText title={quiz.title} /></h3>
+      {playable && quiz.slug ? (
+        <div className="mt-1">
+          <QuizBestBadge slug={quiz.slug} total={quiz.questions} />
+        </div>
+      ) : null}
       <p className="mt-2 text-sm text-gray-400">
-        {quiz.questions} questions <span className="text-gray-600">-</span> {quiz.topic}
+        {quiz.questions > 0 ? `${quiz.questions} questions` : "No questions yet"} <span aria-hidden="true" className="text-gray-600">-</span> {quiz.topic}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         {(quiz.tags ?? [quiz.topic, quiz.level]).slice(0, 3).map((tag) => (
@@ -160,11 +172,25 @@ export function QuizCard({ quiz }: { quiz: Quiz }) {
         ))}
       </div>
       <div className="mt-5">
-        <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white/[0.07] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]">
-          Start quiz <ArrowRight size={15} />
-        </span>
+        {playable ? (
+          <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white/[0.07] px-4 py-3 text-sm font-semibold text-white transition group-hover:bg-white/[0.1]">
+            Start quiz <ArrowRight size={15} />
+          </span>
+        ) : (
+          <span className="inline-flex w-full items-center justify-center rounded-lg bg-white/[0.03] px-4 py-3 text-sm font-semibold text-gray-500">
+            Questions coming soon
+          </span>
+        )}
       </div>
     </article>
+  );
+
+  return playable ? (
+    <Link href={`/quizzes/${quiz.slug}`} className="group block h-full">
+      {card}
+    </Link>
+  ) : (
+    card
   );
 }
 
@@ -229,7 +255,7 @@ export function PyqCard({
           {title}
         </h3>
         <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-gray-400">
-          {source} <span className="text-slate-300 dark:text-gray-600">-</span> {questions}
+          {source} <span aria-hidden="true" className="text-slate-300 dark:text-gray-600">-</span> {questions}
         </p>
       </div>
       <PyqCardActions

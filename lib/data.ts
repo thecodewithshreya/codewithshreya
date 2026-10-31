@@ -1,3 +1,5 @@
+import { staticQuizzes } from "@/lib/quizzes";
+
 export const articles = [
   {
     category: "Data Structures",
@@ -424,11 +426,7 @@ export const videos = [
   },
 ];
 
-export const quizzes = [
-  { title: "Data Structures Fundamentals", topic: "Arrays / Stack / Queue", questions: 15, level: "Beginner", tags: ["Arrays", "Stack", "Queue"] },
-  { title: "Graph Algorithms", topic: "BFS / DFS / Dijkstra", questions: 20, level: "Advanced", tags: ["BFS", "DFS", "Dijkstra"] },
-  { title: "Operating Systems Basics", topic: "Processes / Memory / Scheduling", questions: 10, level: "Beginner", tags: ["Processes", "Memory", "Scheduling"] },
-  { title: "DBMS Essentials", topic: "SQL / Normalization / Transactions", questions: 14, level: "Intermediate", tags: ["SQL", "Normalization", "Transactions"] },
-  { title: "Computer Networks Basics", topic: "TCP / IP / DNS", questions: 15, level: "Beginner", tags: ["TCP", "IP", "DNS"] },
-  { title: "C# Interview Basics", topic: ".NET / OOP / Types", questions: 20, level: "Intermediate", tags: ["C#", ".NET", "OOP"] },
-];
+export const quizzes = staticQuizzes.map(({ items, ...quiz }) => ({
+  ...quiz,
+  questions: items.length,
+}));

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { hasArticle } from "@/lib/articles";
 import { getDynamicArticleBySlug } from "@/lib/dynamic-content";
 import { getPrisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -105,6 +106,9 @@ export async function POST(request: Request, { params }: RouteContext) {
       return invalidRequest("A valid visitor ID is required.");
     }
 
+    const limited = await checkRateLimit(request, "like");
+    if (limited) return limited;
+
     const likeKey = {
       articleSlug_visitorId: {
         articleSlug: slug,
@@ -151,6 +155,9 @@ export async function POST(request: Request, { params }: RouteContext) {
     if (body.length < 2 || body.length > 1_000) {
       return invalidRequest("Comment must contain between 2 and 1,000 characters.");
     }
+
+    const limited = await checkRateLimit(request, "comment");
+    if (limited) return limited;
 
     const comment: CommentRow = await prisma.articleComment.create({
       data: {

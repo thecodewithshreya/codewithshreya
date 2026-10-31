@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { hasAdminSession, isAdminConfigured } from "@/lib/admin-auth";
+import { requireAdmin } from "@/lib/admin-auth";
 import { getAdminContent } from "@/lib/dynamic-content";
 import { getPrisma } from "@/lib/prisma";
+import { parseQuizText } from "@/lib/quiz-format";
 
 const articleCategories = [
   "Data Structures",
@@ -83,7 +84,7 @@ export async function POST(request: Request) {
         data: {
           title: requiredString(payload.title, "Title", 180),
           topic: requiredString(payload.topic, "Topic", 180),
-          questions: Math.max(1, Math.min(Number(payload.questions) || 10, 500)),
+          ...quizItems(payload.items),
           level: enumValue(payload.level, levels, "Beginner"),
           tags: parseTags(payload.tags),
         },
@@ -181,7 +182,7 @@ export async function PATCH(request: Request) {
         data: {
           title: requiredString(payload.title, "Title", 180),
           topic: requiredString(payload.topic, "Topic", 180),
-          questions: Math.max(1, Math.min(Number(payload.questions) || 10, 500)),
+          ...quizItems(payload.items),
           level: enumValue(payload.level, levels, "Beginner"),
           tags: parseTags(payload.tags),
         },
@@ -271,21 +272,6 @@ export async function DELETE(request: Request) {
   }
 }
 
-async function requireAdmin() {
-  if (!isAdminConfigured()) {
-    return NextResponse.json(
-      { error: "Admin login is not configured." },
-      { status: 503 },
-    );
-  }
-
-  if (!(await hasAdminSession())) {
-    return NextResponse.json({ error: "Admin access required." }, { status: 401 });
-  }
-
-  return null;
-}
-
 function requiredString(value: unknown, label: string, maxLength: number) {
   if (typeof value !== "string" || !value.trim()) {
     throw new Error(`${label} is required.`);
@@ -316,6 +302,13 @@ function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 220);
+}
+
+function quizItems(value: unknown) {
+  const items = parseQuizText(requiredString(value, "Questions", 60000));
+  if (!items.length) throw new Error("Add at least one question.");
+
+  return { items, questions: items.length };
 }
 
 function parseTags(value: unknown) {

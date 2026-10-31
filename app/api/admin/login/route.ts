@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import {
   adminCookieName,
+  adminCookieOptions,
   createAdminToken,
   isAdminConfigured,
   isValidAdminPassword,
   sessionMaxAgeSeconds,
 } from "@/lib/admin-auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export function GET(request: Request) {
   return NextResponse.redirect(new URL("/admin", request.url));
@@ -23,6 +25,9 @@ export async function POST(request: Request) {
     );
   }
 
+  const limited = await checkRateLimit(request, "adminLogin");
+  if (limited) return limited;
+
   if (!isValidAdminPassword(password)) {
     return NextResponse.json(
       { error: "Incorrect admin password." },
@@ -32,11 +37,8 @@ export async function POST(request: Request) {
 
   const response = NextResponse.json({ ok: true });
   response.cookies.set(adminCookieName, createAdminToken(), {
-    httpOnly: true,
+    ...adminCookieOptions,
     maxAge: sessionMaxAgeSeconds,
-    path: "/",
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
   });
 
   return response;

@@ -1,0 +1,31 @@
+const pyqSets = [
+  ["GATE CSE 2024 - Set 1", "GATE CSE", "Question paper", "2024", "1Y9lNJVWiB7tFnKY3U9zn07yTgbHlrEjB"],
+  ["GATE CSE 2024 - Set 2", "GATE CSE", "Question paper", "2024", "1Cu_QP1OXEIhRwEXKdw9YkxB9RDnHZ9b3"],
+  ["GATE CSE 2023", "GATE CSE", "Question paper", "2023", "1md9peyYihkt_DH48eFgtWv4G5ERmzj3g"],
+  ["GATE CSE 2022", "GATE CSE", "Question paper", "2022", "15V5Xzj4LHP4OXBgX0EyI-Pyv5aHWzzbs"],
+  ["GATE CSE 2021 - Set 1", "GATE CSE", "Question paper", "2021", "1rYaJXd4JGr4P87I5o7Im2zJZqBtJUpAy"],
+  ["GATE CSE 2021 - Set 2", "GATE CSE", "Question paper", "2021", "1aWy4lliNX1_iFX5GJQlLO7HgraZ745_v"],
+  ["GATE CSE 2020", "GATE CSE", "Question paper", "2020", "15RqlpHF2qTZIeFRO8a7LX8m8NANZ0oPJ"],
+  ["GATE CSE 2019", "GATE CSE", "Question paper", "2019", "1JvkSFEEr4FF3nrRKyUw_KBylaeSIgRuT"],
+  ["GATE CSE 2018", "GATE CSE", "Question paper", "2018", "1USajqlvqWpF7LUnPUVKqJid3F2vrG5TJ"],
+  ["GATE CSE 2017 - Set 1", "GATE CSE", "Question paper", "2017", "15i_Itrpw1Ow4FQmmr64KHPmYQOnQXhcQ"],
+  ["GATE CSE 2017 - Set 2", "GATE CSE", "Question paper", "2017", "1mV2UPoBzjOV6RCKmb7_wzExfJyHpIScA"],
+  ["GATE CSE 2016", "GATE CSE", "Question paper", "2016", "1NZReEcpf8aGq5NJMS_DjCGYFaft9ZmbI"],
+  ["GATE CSE 2015", "GATE CSE", "Question paper", "2015", "1vTKdgbgtefLzRhd9Zr0LLZvpZ0fkwxHi"],
+  ["GATE CSE 2014", "GATE CSE", "Question paper", "2014", "1S2Z_5Iyh0EcP7QlWMbnMBCK0L63Chpyg"],
+  ["GATE CSE 2013", "GATE CSE", "Question paper", "2013", "1opY3497oUmMAxhuBrIOpWDaf16zcI1Ul"],
+  ["GATE CSE 2012", "GATE CSE", "Question paper", "2012", "1m4wyFZHPd7sO4S2apQsF3ePwajlempED"],
+  ["GATE CSE 2011", "GATE CSE", "Question paper", "2011", "145IhI6r5I70mbGr9TzVGJnl3y86IKl_0"],
+  ["GATE CSE 2010", "GATE CSE", "Question paper", "2010", "1_p-PPh7k6V4Ehs3lIPZ2_CpyfRIWwlCJ"],
+  ["GATE CSE 2009", "GATE CSE", "Question paper", "2009", "1KyI09WEoOKJpb2xXmNoxV75ObRtYML5q"],
+  ["GATE CSE 2008", "GATE CSE", "Question paper", "2008", "1RwHMz_KANK0hUL7Ddh9tHdyDDWFlUpuu"],
+  ["GATE CSE 2007", "GATE CSE", "Question paper", "2007", "1IG5m19UIaYi7dBm-AEFe70Vgo85YGEFK"],
+] as const;
+
+export const staticPyqPapers = pyqSets.map(([title, source, questions, year, fileId]) => ({
+  title,
+  source,
+  questions,
+  year,
+  fileId,
+}));

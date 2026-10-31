@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -57,12 +57,14 @@ export function Navbar() {
               </Link>
             );
           })}
-          <span className="ml-2">
+          <SearchLink active={pathname === "/search"} />
+          <span className="ml-1">
             <ThemeToggle />
           </span>
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">
+          <SearchLink active={pathname === "/search"} />
           <ThemeToggle />
           <button
             type="button"
@@ -95,5 +97,22 @@ export function Navbar() {
         </div>
       )}
     </header>
+  );
+}
+
+function SearchLink({ active }: { active: boolean }) {
+  return (
+    <Link
+      href="/search"
+      aria-label="Search"
+      title="Search"
+      className={`ml-1 grid h-9 w-9 place-items-center rounded-full transition ${
+        active
+          ? "bg-violet-500/10 text-violet-300"
+          : "text-gray-400 hover:bg-white/[0.04] hover:text-white"
+      }`}
+    >
+      <Search size={18} />
+    </Link>
   );
 }

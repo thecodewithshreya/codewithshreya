@@ -14,3 +14,12 @@ app/generated/prisma/
 
 .vercel
 .env*
+
+# Unrelated local work (RWA roster conversion); keep out of the website repo
+Lord_Krishna_Residency_RWA_Roster.docx
+lord-krishna-residency-roster-source.jpeg
+outputs/
+work/
+.codex_tmp/
+.codex-tmp-roster/
+tmp/

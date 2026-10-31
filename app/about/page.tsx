@@ -19,7 +19,7 @@ export default function AboutPage() {
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
             <p className="eyebrow">Our mission</p>
-            <h2 className="mt-3 text-3xl font-bold">Make every concept click</h2>
+            <h1 className="mt-3 text-3xl font-bold">Make every concept click</h1>
             <p className="mt-5 leading-7 text-gray-400">
               CodeWithShreya brings together focused explanations, visual lessons,
               hands-on coding, quizzes, and exam preparation in one coherent

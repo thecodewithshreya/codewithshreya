@@ -112,7 +112,7 @@ export function PyqCardActions({
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[#5f33d7] transition hover:text-[#4e23ba]"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[#5f33d7] transition hover:text-[#4e23ba] dark:text-violet-300 dark:hover:text-violet-200"
         >
           View <ArrowRight size={14} />
         </button>

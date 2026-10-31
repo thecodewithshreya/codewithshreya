@@ -224,7 +224,7 @@ export function VideoFilterList({ videos }: { videos: Video[] }) {
                   onClick={() => choosePage(page)}
                   className={`h-10 min-w-10 rounded-lg px-3 text-sm font-bold transition ${
                     currentPage === page
-                      ? "bg-violet-600 text-white shadow-lg shadow-violet-950/20"
+                      ? "bg-violet-600 !text-white shadow-lg shadow-violet-950/20"
                       : "border border-line bg-white text-slate-700 hover:border-violet-400 hover:text-violet-700 dark:bg-white/[0.04] dark:text-gray-300 dark:hover:text-white"
                   }`}
                   aria-current={currentPage === page ? "page" : undefined}

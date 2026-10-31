@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { AdminCommentModeration } from "@/components/admin-comment-moderation";
 import { AdminContentManager } from "@/components/admin-content-manager";
 import { AdminLoginForm } from "@/components/admin-login-form";
 import { hasAdminSession, isAdminConfigured } from "@/lib/admin-auth";
-import { getAdminContent } from "@/lib/dynamic-content";
+import { getAdminContent, getRecentComments } from "@/lib/dynamic-content";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -14,7 +15,9 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   const configured = isAdminConfigured();
   const signedIn = configured ? await hasAdminSession() : false;
-  const content = signedIn ? await getAdminContent() : null;
+  const [content, comments] = signedIn
+    ? await Promise.all([getAdminContent(), getRecentComments()])
+    : [null, []];
 
   return (
     <section className="container-page py-10">
@@ -24,7 +27,7 @@ export default async function AdminPage() {
           Manage CodeWithShreya content
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-gray-400">
-          Add blogs, videos, quizzes, and PYQ papers from one protected screen.
+          Add blogs, videos, quizzes, and PYQ papers, and moderate comments, from one protected screen.
         </p>
       </div>
 
@@ -39,7 +42,10 @@ export default async function AdminPage() {
           </p>
         </div>
       ) : signedIn && content ? (
-        <AdminContentManager content={content} />
+        <>
+          <AdminContentManager content={content} />
+          <AdminCommentModeration comments={comments} />
+        </>
       ) : (
         <AdminLoginForm />
       )}

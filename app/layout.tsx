@@ -11,6 +11,7 @@ const themeScript = `
     const theme = savedTheme === "light" || savedTheme === "dark"
       ? savedTheme
       : (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+    document.documentElement.classList.remove("light", "dark");
     document.documentElement.classList.add(theme);
     document.documentElement.style.colorScheme = theme;
   } catch (_) {
@@ -20,6 +21,9 @@ const themeScript = `
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://codewithshreya.com"),
+  alternates: {
+    types: { "application/rss+xml": [{ url: "/feed.xml", title: "CodeWithShreya articles" }] },
+  },
   title: {
     default: "CodeWithShreya - Learn Computer Science & Programming",
     template: "%s | CodeWithShreya",

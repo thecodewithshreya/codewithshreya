@@ -73,6 +73,7 @@ model DynamicQuiz {
   questions Int      @default(10)
   level     String   @default("Beginner") @db.VarChar(40)
   tags      String[] @default([])
+  items     Json     @default("[]")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -95,4 +96,13 @@ model DynamicPyqPaper {
   @@index([year])
   @@index([createdAt(sort: Desc)])
   @@map("dynamic_pyq_papers")
+}
+
+model RateLimit {
+  key         String   @id @db.VarChar(120)
+  count       Int      @default(0)
+  windowStart DateTime @default(now()) @map("window_start")
+
+  @@index([windowStart])
+  @@map("rate_limits")
 }

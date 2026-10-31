@@ -1,5 +1,7 @@
 import { articles, quizzes, videos } from "@/lib/data";
 import { getPrisma } from "@/lib/prisma";
+import { normalizeQuizItems, type QuizQuestion } from "@/lib/quiz-format";
+import { getStaticQuiz } from "@/lib/quizzes";
 
 export type ArticleSummary = {
   category: string;
@@ -27,6 +29,7 @@ export type VideoSummary = {
 
 export type QuizSummary = {
   id?: string;
+  slug?: string;
   title: string;
   topic: string;
   questions: number;
@@ -41,6 +44,11 @@ export type PyqPaperSummary = {
   questions: string;
   year: string;
   fileId: string;
+};
+
+export type QuizDetail = QuizSummary & {
+  slug: string;
+  items: QuizQuestion[];
 };
 
 export type DynamicArticleDetail = ArticleSummary & {
@@ -78,36 +86,159 @@ export async function getDynamicArticleBySlug(
   }, null);
 }
 
-export async function getAdminContent() {
-  return readDynamic(
-    async () => {
-      const prisma = getPrisma();
-      const [dynamicArticles, dynamicVideos, dynamicQuizzes, dynamicPyqPapers] =
-        await Promise.all([
-          prisma.dynamicArticle.findMany({ orderBy: { createdAt: "desc" } }),
-          prisma.dynamicVideo.findMany({ orderBy: { createdAt: "desc" } }),
-          prisma.dynamicQuiz.findMany({ orderBy: { createdAt: "desc" } }),
-          prisma.dynamicPyqPaper.findMany({ orderBy: { createdAt: "desc" } }),
-        ]);
+// Static quizzes use readable slugs; dynamic quizzes are addressed by their id.
+export async function getQuizBySlug(slug: string): Promise<QuizDetail | null> {
+  const staticQuiz = getStaticQuiz(slug);
 
-      return {
-        articles: dynamicArticles.map(mapArticle),
-        videos: dynamicVideos.map(mapVideo),
-        quizzes: dynamicQuizzes.map(mapQuiz),
-        pyqs: dynamicPyqPapers.map(mapPyqPaper),
-      };
-    },
-    { articles: [], videos: [], quizzes: [], pyqs: [] },
+  if (staticQuiz) {
+    return { ...staticQuiz, questions: staticQuiz.items.length };
+  }
+
+  return readDynamic(async () => {
+    const prisma = getPrisma();
+    const quiz = await prisma.dynamicQuiz.findUnique({ where: { id: slug } });
+    return quiz ? mapQuizDetail(quiz) : null;
+  }, null);
+}
+
+export async function getDynamicSitemapEntries() {
+  // Read separately so one failing table does not hide the other's URLs.
+  const [articles, quizzes] = await Promise.all([
+    readDynamic(
+      () => getPrisma().dynamicArticle.findMany({ select: { slug: true, updatedAt: true } }),
+      [],
+    ),
+    readDynamic(async () => {
+      const dynamicQuizzes = await getPrisma().dynamicQuiz.findMany({
+        select: { id: true, items: true, updatedAt: true },
+      });
+
+      return dynamicQuizzes
+        .filter((quiz) => normalizeQuizItems(quiz.items).length > 0)
+        .map((quiz) => ({ slug: quiz.id, updatedAt: quiz.updatedAt }));
+    }, []),
+  ]);
+
+  return { articles, quizzes };
+}
+
+export type FeedArticle = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  publishedAt?: Date;
+};
+
+// Articles for the RSS feed: dynamic ones (newest first, with dates) then the
+// published static ones, which have no publish date.
+export async function getFeedArticles(): Promise<FeedArticle[]> {
+  const dynamicArticles = await readDynamic(
+    () =>
+      getPrisma().dynamicArticle.findMany({
+        select: { slug: true, title: true, excerpt: true, category: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+      }),
+    [],
   );
+  const seen = new Set(dynamicArticles.map((article) => article.slug));
+
+  return [
+    ...dynamicArticles.map(({ createdAt, ...article }) => ({ ...article, publishedAt: createdAt })),
+    ...articles.flatMap((article) =>
+      article.slug && !seen.has(article.slug)
+        ? [{ slug: article.slug, title: article.title, excerpt: article.excerpt, category: article.category }]
+        : [],
+    ),
+  ];
+}
+
+export type AdminComment = {
+  id: string;
+  articleSlug: string;
+  articleTitle: string;
+  authorName: string;
+  body: string;
+  createdAt: string;
+};
+
+export async function getRecentComments(limit = 100): Promise<AdminComment[]> {
+  return readDynamic(async () => {
+    const prisma = getPrisma();
+    const comments = await prisma.articleComment.findMany({
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: limit,
+    });
+    const slugs = [...new Set(comments.map((comment) => comment.articleSlug))];
+    const dynamicArticles = await prisma.dynamicArticle.findMany({
+      where: { slug: { in: slugs } },
+      select: { slug: true, title: true },
+    });
+    const titles = new Map<string, string>([
+      ...articles.flatMap((article) => (article.slug ? [[article.slug, article.title] as const] : [])),
+      ...dynamicArticles.map((article) => [article.slug, article.title] as const),
+    ]);
+
+    return comments.map((comment) => ({
+      id: comment.id,
+      articleSlug: comment.articleSlug,
+      articleTitle: titles.get(comment.articleSlug) ?? comment.articleSlug,
+      authorName: comment.authorName,
+      body: comment.body,
+      createdAt: comment.createdAt.toISOString(),
+    }));
+  }, []);
+}
+
+export async function getAdminContent() {
+  // Each table is read on its own (null = failed), so one failing table, such
+  // as one waiting for a migration, does not hide the others from the admin page.
+  const [articles, videos, quizzes, pyqs] = await Promise.all([
+    readDynamic(async () => {
+      const rows = await getPrisma().dynamicArticle.findMany({ orderBy: { createdAt: "desc" } });
+      return rows.map(mapArticle);
+    }, null),
+    readDynamic(async () => {
+      const rows = await getPrisma().dynamicVideo.findMany({ orderBy: { createdAt: "desc" } });
+      return rows.map(mapVideo);
+    }, null),
+    readDynamic(async () => {
+      const rows = await getPrisma().dynamicQuiz.findMany({ orderBy: { createdAt: "desc" } });
+      return rows.map(mapQuizDetail);
+    }, null),
+    readDynamic(async () => {
+      const rows = await getPrisma().dynamicPyqPaper.findMany({ orderBy: { createdAt: "desc" } });
+      return rows.map(mapPyqPaper);
+    }, null),
+  ]);
+  const unavailable = (
+    [
+      ["article", articles],
+      ["video", videos],
+      ["quiz", quizzes],
+      ["pyq", pyqs],
+    ] as const
+  ).flatMap(([type, rows]) => (rows ? [] : [type]));
+
+  return {
+    articles: articles ?? [],
+    videos: videos ?? [],
+    quizzes: quizzes ?? [],
+    pyqs: pyqs ?? [],
+    unavailable,
+  };
 }
 
 async function getDynamicArticles(): Promise<ArticleSummary[]> {
   return readDynamic(async () => {
     const prisma = getPrisma();
+    // Summary fields only: these lists reach client components, so the
+    // article bodies would otherwise be sent to the browser on every list page.
     const dynamicArticles = await prisma.dynamicArticle.findMany({
+      select: { title: true, slug: true, category: true, excerpt: true, readTime: true, color: true },
       orderBy: { createdAt: "desc" },
     });
-    return dynamicArticles.map(mapArticle);
+    return dynamicArticles.map(({ readTime, ...article }) => ({ ...article, date: readTime }));
   }, []);
 }
 
@@ -204,21 +335,32 @@ function mapVideo(video: {
   };
 }
 
-function mapQuiz(quiz: {
-  id?: string;
+type QuizRow = {
+  id: string;
   title: string;
   topic: string;
-  questions: number;
   level: string;
   tags: string[];
-}): QuizSummary {
+  items: unknown;
+};
+
+function mapQuiz(quiz: QuizRow): QuizSummary {
+  const { items, ...summary } = mapQuizDetail(quiz);
+  return summary;
+}
+
+function mapQuizDetail(quiz: QuizRow): QuizDetail {
+  const items = normalizeQuizItems(quiz.items);
+
   return {
     id: quiz.id,
+    slug: quiz.id,
     title: quiz.title,
     topic: quiz.topic,
-    questions: quiz.questions,
+    questions: items.length,
     level: quiz.level,
     tags: quiz.tags,
+    items,
   };
 }
 

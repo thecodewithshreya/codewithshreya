@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -71,6 +72,9 @@ export async function POST(request: Request) {
   if (code.length > 20_000) {
     return invalidRequest("Code is too long. Keep it under 20,000 characters.");
   }
+
+  const limited = await checkRateLimit(request, "compiler");
+  if (limited) return limited;
 
   const apiBaseUrl = (process.env.JUDGE0_API_URL || "https://ce.judge0.com").replace(/\/$/, "");
   const headers = getJudge0Headers();
