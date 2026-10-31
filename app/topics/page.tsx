@@ -55,7 +55,7 @@ export default async function TopicsPage() {
             {group.track ? (
               <Link
                 href={tracks[group.track].href}
-                className="inline-flex shrink-0 items-center gap-1 text-sm text-indigo-400 hover:text-indigo-300"
+                className="inline-flex shrink-0 items-center gap-1 text-sm text-violet-400 hover:text-violet-300"
               >
                 {tracks[group.track].label} preparation guide <ArrowRight size={15} />
               </Link>

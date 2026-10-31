@@ -6,6 +6,7 @@ import { PyqCardActions } from "./pyq-card-actions";
 import { VideoEmbedPreview } from "./video-embed-preview";
 import { TitleText } from "./title-text";
 import { categoryLabel, plainTitle } from "@/lib/title";
+import { articleTone, cardBand, iconTile, levelDots, quizTone, videoPoster, videoTone } from "@/lib/palette";
 
 type Article = {
   category: string;
@@ -21,7 +22,7 @@ export function ArticleCard({ article }: { article: Article }) {
 
   return (
     <article className={`card h-full overflow-hidden ${article.slug ? "card-hover" : ""}`}>
-      <div className={`flex h-20 items-start justify-between gap-2 bg-gradient-to-br ${article.color} p-4`}>
+      <div className={`flex h-20 items-start justify-between gap-2 bg-gradient-to-br ${cardBand[articleTone(article.category)]} p-4`}>
         <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-gray-200">
           {label}
         </span>
@@ -36,7 +37,7 @@ export function ArticleCard({ article }: { article: Article }) {
         {article.slug ? (
           <Link
             href={`/blog/${article.slug}`}
-            className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-400 hover:text-indigo-300"
+            className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-violet-400 hover:text-violet-300"
           >
             Read article <ArrowRight size={15} />
           </Link>
@@ -70,12 +71,6 @@ export function VideoCard({ video }: { video: Video }) {
     : video.youtubePlaylistId
       ? `https://www.youtube.com/embed/videoseries?list=${video.youtubePlaylistId}${playlistIndexQuery}`
       : null;
-  const levelColor =
-    level === "Advanced"
-      ? "border-rose-500/30 bg-rose-500/10 text-rose-300"
-      : level === "Intermediate"
-        ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
-        : "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
 
   return (
     <article className="card group h-full overflow-hidden">
@@ -84,15 +79,13 @@ export function VideoCard({ video }: { video: Video }) {
           title={plainTitle(video.title)}
           youtubeId={video.youtubeId}
           embedUrl={embedUrl}
-          color={video.color}
+          color={videoPoster[videoTone(video)]}
           duration={video.duration}
         />
       </div>
       <div className="p-4">
         <div className="flex items-center gap-3">
-          <span className={`rounded-md border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${levelColor}`}>
-            {level}
-          </span>
+          <LevelBadge level={level} />
           <span className="flex items-center gap-1.5 text-sm text-gray-500">
             <Clock size={15} /> {video.duration}
           </span>
@@ -106,12 +99,12 @@ export function VideoCard({ video }: { video: Video }) {
             href={video.youtubeUrl}
             target="_blank"
             rel="noreferrer"
-            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-amber-300"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-violet-400 hover:text-violet-300"
           >
             Watch on YouTube <ArrowRight size={15} />
           </a>
         ) : (
-          <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-amber-300">
+          <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-violet-400">
             Watch now <ArrowRight size={15} />
           </span>
         )}
@@ -130,30 +123,15 @@ type Quiz = {
 };
 
 export function QuizCard({ quiz }: { quiz: Quiz }) {
-  const levelColor =
-    quiz.level === "Advanced"
-      ? "border-rose-500/30 text-rose-300 bg-rose-500/10"
-      : quiz.level === "Intermediate"
-        ? "border-amber-500/30 text-amber-300 bg-amber-500/10"
-        : "border-emerald-500/30 text-emerald-300 bg-emerald-500/10";
-  const accent =
-    quiz.level === "Advanced"
-      ? "border-rose-500/35 hover:border-rose-400/70"
-      : quiz.level === "Intermediate"
-        ? "border-amber-500/25 hover:border-amber-400/60"
-        : "border-emerald-500/25 hover:border-emerald-400/60";
-
   const playable = Boolean(quiz.slug) && quiz.questions > 0;
 
   const card = (
-    <article className={`card h-full p-4 ${accent} ${playable ? "card-hover" : ""}`}>
+    <article className={`card h-full p-4 ${playable ? "card-hover" : ""}`}>
       <div className="flex items-start justify-between">
-        <span className="grid h-11 w-11 place-items-center rounded-lg bg-rose-500/10 text-rose-300">
+        <span className={`grid h-11 w-11 place-items-center rounded-lg ${iconTile[quizTone(quiz.slug)]}`}>
           <FileQuestion size={20} />
         </span>
-        <span className={`rounded-md border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${levelColor}`}>
-          {quiz.level}
-        </span>
+        <LevelBadge level={quiz.level} />
       </div>
       <h3 className="mt-5 text-lg font-bold leading-snug"><TitleText title={quiz.title} /></h3>
       {playable && quiz.slug ? (
@@ -191,6 +169,25 @@ export function QuizCard({ quiz }: { quiz: Quiz }) {
     </Link>
   ) : (
     card
+  );
+}
+
+// Difficulty shown as 1-3 dots in a neutral badge, so green and red stay reserved for right and wrong.
+function LevelBadge({ level }: { level: string }) {
+  const dots = levelDots(level);
+
+  return (
+    <span className="inline-flex items-center gap-2 rounded-md border border-line bg-white/[0.04] px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-gray-300">
+      <span className="flex gap-0.5" aria-hidden="true">
+        {[1, 2, 3].map((dot) => (
+          <span
+            key={dot}
+            className={`h-1.5 w-1.5 rounded-full ${dot <= dots ? "bg-violet-400" : "bg-gray-500/40"}`}
+          />
+        ))}
+      </span>
+      {level}
+    </span>
   );
 }
 

@@ -34,8 +34,8 @@ export function BlogFilterList({ articles }: { articles: Article[] }) {
             onClick={() => setActiveFilter(filter)}
             className={`rounded-full px-4 py-2 text-sm transition ${
               activeFilter === filter
-                ? "bg-indigo-600 !text-white"
-                : "border border-line text-gray-400 hover:border-indigo-500/60 hover:text-white"
+                ? "bg-violet-600 !text-white"
+                : "border border-line text-gray-400 hover:border-violet-500/60 hover:text-white"
             }`}
           >
             {filter}

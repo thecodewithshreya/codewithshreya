@@ -38,7 +38,7 @@ export function RelatedContent({
               {quiz.items.length} questions · {quiz.topic}
             </span>
           </span>
-          <ArrowRight size={18} className="shrink-0 text-indigo-400" />
+          <ArrowRight size={18} className="shrink-0 text-violet-400" />
         </Link>
       ) : null}
 

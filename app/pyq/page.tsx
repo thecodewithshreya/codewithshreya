@@ -49,9 +49,9 @@ export default async function PyqPage({ searchParams }: { searchParams: Promise<
       </section>
 
       <section className="container-page py-16">
-        <div className="card overflow-hidden border-indigo-500/20 bg-gradient-to-br from-indigo-600/20 via-panel to-purple-500/10 p-8 sm:p-12">
+        <div className="card overflow-hidden border-violet-500/20 bg-gradient-to-br from-indigo-600/20 via-panel to-purple-500/10 p-8 sm:p-12">
           <div className="grid items-center gap-8 md:grid-cols-[auto_1fr_auto]">
-            <span className="grid h-16 w-16 place-items-center rounded-xl bg-indigo-500/15 text-indigo-300">
+            <span className="grid h-16 w-16 place-items-center rounded-xl bg-violet-500/15 text-violet-300">
               <Trophy size={30} />
             </span>
             <div>
@@ -93,7 +93,7 @@ function SectionTitle({
 }) {
   return (
     <div className="flex items-center gap-4">
-      <span className="grid h-11 w-11 place-items-center rounded-xl border border-line bg-white text-[#5f33d7] dark:bg-[#111827] dark:text-indigo-300">
+      <span className="grid h-11 w-11 place-items-center rounded-xl border border-line bg-white text-[#5f33d7] dark:bg-[#111827] dark:text-violet-300">
         <Icon size={22} />
       </span>
       <div>

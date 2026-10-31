@@ -34,7 +34,7 @@ export function SubjectCard({ subject, content }: { subject: Subject; content: S
       <p className="mt-2 flex-1 text-sm leading-6 text-gray-400">{subject.description}</p>
       <p className="mt-4 flex items-center justify-between gap-2 text-xs font-medium text-gray-500">
         {subjectSummary(content)}
-        <ArrowRight size={16} className="shrink-0 text-indigo-400 transition group-hover:translate-x-0.5" />
+        <ArrowRight size={16} className="shrink-0 text-violet-400 transition group-hover:translate-x-0.5" />
       </p>
     </Link>
   );

@@ -49,7 +49,7 @@ export default function NotFound() {
           ))}
         </div>
 
-        <Link href="/" className="mt-8 inline-block text-sm text-indigo-400 hover:text-indigo-300">
+        <Link href="/" className="mt-8 inline-block text-sm text-violet-400 hover:text-violet-300">
           Back to the home page
         </Link>
       </div>

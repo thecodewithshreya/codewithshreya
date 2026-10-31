@@ -17,14 +17,14 @@ export default function ContactPage() {
         </div>
         <div className={`mx-auto grid max-w-4xl gap-6 ${socialLinks.length ? "md:grid-cols-2" : ""}`}>
           <div className="card p-7">
-            <span className="grid h-12 w-12 place-items-center rounded-xl bg-indigo-500/10 text-indigo-400">
+            <span className="grid h-12 w-12 place-items-center rounded-xl bg-violet-500/10 text-violet-400">
               <Mail size={23} />
             </span>
             <h2 className="mt-5 text-xl font-semibold">Email</h2>
             <p className="mt-2 text-sm leading-6 text-gray-400">
               For questions, content suggestions, and general inquiries.
             </p>
-            <a href="mailto:thecodewithshreya@gmail.com" className="mt-5 inline-block text-sm font-medium text-indigo-400">
+            <a href="mailto:thecodewithshreya@gmail.com" className="mt-5 inline-block text-sm font-medium text-violet-400">
               thecodewithshreya@gmail.com
             </a>
           </div>
@@ -54,7 +54,7 @@ export default function ContactPage() {
           </div>
           ) : null}
         </div>
-        <div className="mx-auto mt-8 max-w-4xl rounded-xl border border-indigo-500/20 bg-indigo-500/[0.06] p-5 text-center text-sm text-gray-400">
+        <div className="mx-auto mt-8 max-w-4xl rounded-xl border border-violet-500/20 bg-violet-500/[0.06] p-5 text-center text-sm text-gray-400">
           We typically respond to emails within 2-3 working days.
         </div>
       </section>

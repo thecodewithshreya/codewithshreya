@@ -41,7 +41,7 @@ export default function AboutPage() {
               const StatIcon = Icon as typeof BookOpen;
               return (
                 <div key={String(label)} className="card p-6">
-                  <StatIcon size={22} className="text-indigo-400" />
+                  <StatIcon size={22} className="text-violet-400" />
                   <div className="mt-4 text-2xl font-bold">{String(value)}</div>
                   <div className="mt-1 text-sm text-gray-500">{String(label)}</div>
                 </div>
@@ -59,7 +59,7 @@ export default function AboutPage() {
           <div className="mt-10 grid gap-5 md:grid-cols-3">
             {values.map((value) => (
               <div key={value.title} className="card p-6">
-                <span className="grid h-12 w-12 place-items-center rounded-xl bg-indigo-500/10 text-indigo-400">
+                <span className="grid h-12 w-12 place-items-center rounded-xl bg-violet-500/10 text-violet-400">
                   <value.icon size={23} />
                 </span>
                 <h3 className="mt-5 text-lg font-semibold">{value.title}</h3>

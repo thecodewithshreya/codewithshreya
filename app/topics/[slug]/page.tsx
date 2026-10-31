@@ -50,7 +50,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
         <div className="premium-hero-glow absolute inset-0" />
         <div className="container-page relative py-10 sm:py-14">
           <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-gray-400">
-            <Link href="/topics" className="inline-flex items-center gap-1 hover:text-indigo-300">
+            <Link href="/topics" className="inline-flex items-center gap-1 hover:text-violet-300">
               <ArrowLeft size={15} /> All subjects
             </Link>
             {subject.tracks.map((track) => (
@@ -160,7 +160,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
                   {subject.name} questions appear in every GATE CSE paper. Practise them in exam conditions.
                 </span>
               </span>
-              <ArrowRight size={18} className="text-indigo-400" />
+              <ArrowRight size={18} className="text-violet-400" />
             </Link>
           </section>
         ) : null}

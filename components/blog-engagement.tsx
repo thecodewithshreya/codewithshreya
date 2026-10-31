@@ -211,7 +211,7 @@ export function BlogEngagement({
               minLength={2}
               maxLength={50}
               required
-              className="mt-2 w-full rounded-lg border border-line bg-ink/40 px-4 py-3 text-sm outline-none transition focus:border-indigo-500"
+              className="mt-2 w-full rounded-lg border border-line bg-ink/40 px-4 py-3 text-sm outline-none transition focus:border-violet-500"
               placeholder="Your name"
             />
           </div>
@@ -225,7 +225,7 @@ export function BlogEngagement({
               maxLength={1_000}
               required
               rows={4}
-              className="mt-2 w-full resize-y rounded-lg border border-line bg-ink/40 px-4 py-3 text-sm outline-none transition focus:border-indigo-500"
+              className="mt-2 w-full resize-y rounded-lg border border-line bg-ink/40 px-4 py-3 text-sm outline-none transition focus:border-violet-500"
               placeholder="Share your thoughts..."
             />
           </div>

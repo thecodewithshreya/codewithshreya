@@ -32,25 +32,7 @@ const contentTypes: {
   { id: "pyq", label: "PYQ", icon: GraduationCap },
 ];
 
-const articleGradientOptions = [
-  { label: "Emerald / Teal", value: "from-emerald-500/30 to-teal-500/5" },
-  { label: "Blue / Cyan", value: "from-blue-500/30 to-cyan-500/5" },
-  { label: "Indigo / Blue", value: "from-indigo-500/30 to-blue-500/5" },
-  { label: "Violet / Indigo", value: "from-violet-500/30 to-indigo-500/5" },
-  { label: "Purple / Pink", value: "from-purple-500/30 to-pink-500/5" },
-  { label: "Orange / Amber", value: "from-orange-500/30 to-amber-500/5" },
-  { label: "Rose / Purple", value: "from-rose-500/30 to-purple-500/5" },
-];
-
-const videoGradientOptions = [
-  { label: "Blue / Indigo", value: "from-blue-600 to-indigo-900" },
-  { label: "Violet / Indigo", value: "from-violet-600 to-indigo-950" },
-  { label: "Purple / Slate", value: "from-purple-600 to-slate-900" },
-  { label: "Cyan / Blue", value: "from-cyan-600 to-blue-950" },
-  { label: "Rose / Purple", value: "from-rose-600 to-purple-950" },
-  { label: "Amber / Orange", value: "from-amber-600 to-orange-950" },
-  { label: "Emerald / Teal", value: "from-emerald-600 to-teal-950" },
-];
+// Card colours come from the subject (lib/palette.ts), so the forms no longer ask for one.
 
 const saveMessageKey = "codewithshreya-admin-save-message";
 
@@ -374,7 +356,6 @@ function ArticleFields({ values }: { values?: FormValues }) {
       <Select name="category" label="Category" options={["Computer Networks", "DBMS", "DotNet", "Data Structures", "Algorithms", "Operating Systems", "Programming", "Career"]} defaultValue={values?.category} />
       <Field name="excerpt" label="Short excerpt" defaultValue={values?.excerpt} required />
       <Field name="readTime" label="Read time" placeholder="8 min read" defaultValue={values?.readTime} />
-      <Select name="color" label="Gradient color" options={articleGradientOptions} defaultValue={values?.color} />
       <ArticleContentEditor defaultValue={values?.content} />
     </>
   );
@@ -471,7 +452,6 @@ function VideoFields({ values }: { values?: FormValues }) {
       <Field name="youtubeUrl" label="YouTube URL" placeholder="https://www.youtube.com/watch?v=..." defaultValue={values?.youtubeUrl} />
       <Field name="youtubePlaylistId" label="Playlist ID" defaultValue={values?.youtubePlaylistId} />
       <Field name="description" label="Description" defaultValue={values?.description} required />
-      <Select name="color" label="Gradient color" options={videoGradientOptions} defaultValue={values?.color} />
     </>
   );
 }

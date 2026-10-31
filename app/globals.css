@@ -50,7 +50,7 @@ body {
 }
 
 ::selection {
-  background: #5b5bd6;
+  background: #7c3aed;
   color: white;
 }
 
@@ -968,6 +968,25 @@ html.light .text-indigo-400 {
 
 html.light .hover\:text-indigo-300:hover {
   color: #4338ca;
+}
+
+/* Brand violet (links, accents, GATE) and job-prep cyan, darkened for white
+   backgrounds. The compiler's own dark theme keeps the light shades below. */
+html.light .text-violet-300,
+html.light .text-violet-400 {
+  color: #6d28d9;
+}
+
+html.light .hover\:text-violet-300:hover {
+  color: #5b21b6;
+}
+
+html.light .text-cyan-300 {
+  color: #0e7490;
+}
+
+html.light .compiler-dark .text-violet-300 {
+  color: #c4b5fd;
 }
 
 html.light .bg-white\/\[0\.015\] {

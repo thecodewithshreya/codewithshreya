@@ -14,7 +14,7 @@ export function ArticleQuiz({ question, options, answer }: ArticleQuizProps) {
   const isCorrect = selected === answer;
 
   return (
-    <section className="my-8 rounded-2xl border border-indigo-500/20 bg-indigo-500/[0.06] p-5 sm:p-6">
+    <section className="my-8 rounded-2xl border border-violet-500/20 bg-violet-500/[0.06] p-5 sm:p-6">
       <p className="eyebrow">Quick check</p>
       <h2 className="mt-2 text-lg font-semibold">{question}</h2>
       <div className="mt-4 grid gap-2">
@@ -28,8 +28,8 @@ export function ArticleQuiz({ question, options, answer }: ArticleQuizProps) {
               onClick={() => setSelected(option)}
               className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition ${
                 isSelected
-                  ? "border-indigo-500 bg-indigo-500/10 text-indigo-300"
-                  : "border-line bg-panel/60 text-gray-300 hover:border-indigo-500/50"
+                  ? "border-violet-500 bg-violet-500/10 text-violet-300"
+                  : "border-line bg-panel/60 text-gray-300 hover:border-violet-500/50"
               }`}
             >
               {isSelected ? <CheckCircle2 size={17} /> : <Circle size={17} />}

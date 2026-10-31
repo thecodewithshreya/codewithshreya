@@ -6,6 +6,8 @@ const config: Config = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    // Class names built in lib/, e.g. the subject colours in lib/palette.ts.
+    "./lib/**/*.{ts,tsx}",
   ],
   theme: {
     extend: {

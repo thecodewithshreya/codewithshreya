@@ -25,7 +25,7 @@ export default async function BlogPage() {
             </div>
             <a
               href="/feed.xml"
-              className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition hover:text-indigo-300"
+              className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition hover:text-violet-300"
             >
               <Rss size={15} />
               RSS feed

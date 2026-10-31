@@ -69,7 +69,7 @@ export function DailyQuestionCard({ question }: { question: DailyQuestion }) {
             {question.explanation ? <p className="mt-2 text-gray-400">{question.explanation}</p> : null}
             <Link
               href={`/quizzes/${question.quizSlug}`}
-              className="mt-3 inline-flex items-center gap-1 font-medium text-indigo-400 hover:text-indigo-300"
+              className="mt-3 inline-flex items-center gap-1 font-medium text-violet-400 hover:text-violet-300"
             >
               Practice the full {question.quizTitle} quiz <ArrowRight size={15} />
             </Link>

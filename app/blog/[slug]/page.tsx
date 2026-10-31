@@ -176,7 +176,7 @@ function ArticleLayout({
         <div className="mx-auto max-w-3xl">
         <Link
           href="/blog"
-          className="inline-flex items-center gap-2 text-sm text-gray-400 transition hover:text-indigo-300"
+          className="inline-flex items-center gap-2 text-sm text-gray-400 transition hover:text-violet-300"
         >
           <ArrowLeft size={16} />
           Back to all articles

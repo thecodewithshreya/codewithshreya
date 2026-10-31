@@ -21,7 +21,7 @@ export function ArticleToc({ headings }: { headings: ArticleHeading[] }) {
         <ol className="mt-4 space-y-2 border-l border-line pl-4 text-sm">
           {headings.map((heading) => (
             <li key={heading.id}>
-              <a href={`#${heading.id}`} className="text-gray-400 transition hover:text-indigo-300">
+              <a href={`#${heading.id}`} className="text-gray-400 transition hover:text-violet-300">
                 {heading.text}
               </a>
             </li>
