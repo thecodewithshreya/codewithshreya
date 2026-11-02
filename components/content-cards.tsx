@@ -1,6 +1,5 @@
 import { ArrowRight, Clock, FileQuestion, Layers3 } from "lucide-react";
 import Link from "next/link";
-import type { ElementType } from "react";
 import { ArticleReadBadge, QuizBestBadge } from "./progress-badges";
 import { PyqCardActions } from "./pyq-card-actions";
 import { VideoEmbedPreview } from "./video-embed-preview";
@@ -188,35 +187,6 @@ function LevelBadge({ level }: { level: string }) {
       </span>
       {level}
     </span>
-  );
-}
-
-type Tool = {
-  title: string;
-  description: string;
-  icon: ElementType;
-  href: string;
-  accent: string;
-  status?: string;
-};
-
-export function ToolCard({ tool }: { tool: Tool }) {
-  return (
-    <Link href={tool.href} className={`tool-preview-card group ${tool.accent}`}>
-      <div className="flex items-start justify-between gap-4">
-        <span className="tool-preview-icon">
-          <tool.icon size={20} />
-        </span>
-        {tool.status && <span className="tool-preview-status">{tool.status}</span>}
-      </div>
-      <h3 className="mt-5 text-lg font-bold text-white">{tool.title}</h3>
-      <p className="mt-2 text-sm leading-6 text-gray-400">{tool.description}</p>
-      <div className="mt-5">
-        <span className="tool-preview-action rounded-lg px-3 py-2">
-          Open tool <ArrowRight size={15} />
-        </span>
-      </div>
-    </Link>
   );
 }
 
