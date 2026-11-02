@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/blog/[slug]": ["./content/blog/*.mdx"],
   },
+  // Bloom Tasks is a static installable app in public/bloom; public folders have no index route.
+  async redirects() {
+    return [{ source: "/bloom", destination: "/bloom/index.html", permanent: false }];
+  },
 };
 
 export default withMDX(nextConfig);
